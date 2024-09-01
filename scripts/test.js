@@ -6,46 +6,43 @@ import { dateMocker } from "./utils/dateMocker.js";
 import { performanceMocker } from "./utils/performanceMocker.js";
 import { ExpectationError } from './utils/ExpectationError.js';
 
-import * as setThrottleMaxTests from './tests/setThrottleMax.js';
-import * as setThrottlePeriodTests from './tests/setThrottlePeriod.js';
-import * as msPerRequestTests from './tests/request/msPerRequest.js';
-import * as delayProgressTests from './tests/progress/delayProgress.js';
-import * as msPerProgressTests from './tests/progress/msPerProgress.js';
-import * as showProgressTests from './tests/progress/showProgress.js';
-import * as beforeRequestTests from './tests/request/beforeRequest.test.js';
-import * as cancelQueuedRequestsTests from './tests/request/cancelQueuedRequests.test.js';
-import * as delayRequestTests from './tests/request/delayRequest.test.js';
-
+import { getModules } from './utils/getModules.js';
 const excess = 10;
 
 const main = async () => {
-  const suites = [
-    setThrottleMaxTests,
-    setThrottlePeriodTests,
-    msPerRequestTests,
-    delayProgressTests,
-    msPerProgressTests,
-    showProgressTests,
-    beforeRequestTests,
-    cancelQueuedRequestsTests,
-    delayRequestTests
-  ];
-
-  let passed = 0;
-  let failed = 0;
-
+  const suites = await getModules('scripts/tests');
+  const state = {
+    passed: 0,
+    failed: 0,
+    skipped: 0
+  }
   beforeAll();
-  for (let s = 0; s < suites.length; s++) {
-    let suite = suites[s];
+
+  await runSuites(suites, state);
+
+  afterAll();
+  summarizeTests(state);
+}
+
+const runSuites = async (suites, state, depth = 0) => {
+  const keys = Object.keys(suites);
+  const indent = depth === 0 ? '' : ' '.repeat(depth);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+
+    console.info(`${indent}${key}`);
+    const suite = suites[key];
+
     const tests = Object.values(suite).filter(test => typeof test === 'function');
-    console.debug(suite.name ?? `Suite ${s + 1}`);
-    for (let i = 0; i < tests.length; i++) {
-      const pass = await runTest(tests[i], i, tests);
-      if (pass) passed++; else failed++;
+    if (tests.length === 0) {
+      await runSuites(suite, state, depth + 1);
+    } else {
+      for (let i = 0; i < tests.length; i++) {
+        const pass = await runTest(tests[i], i, tests, depth + 1);
+        if (pass) state.passed++; else state.failed++;
+      }
     }
   }
-  afterAll();
-  summarizeTests(passed, failed);
 }
 
 const beforeAll = () => {
@@ -73,43 +70,59 @@ const afterEach = () => {
   performanceMocker.restore();
   stdout.showOutput();
 }
-const runTest = async (test, i, a) => {
+const runTest = async (test, i, a, depth) => {
   const { name } = test;
+  const indent = ' '.repeat(depth);
   try {
     beforeEach();
     await test();
     afterEach();
-    console.group();
     if (i < excess) {
-      console.info(`pass: ${name}`);
+      console.info(`${indent}pass: ${name}`);
     } else if (i === excess) {
-      console.debug('pass: ...');
+      console.debug(`${indent}pass: ...`);
     } else if (i === a.length - 1) {
-      console.info(`pass: ${name}`);
+      console.info(`${indent}pass: ${name}`);
     }
-    console.groupEnd();
     return true;
   } catch (e) {
     afterEach();
-    console.group();
-    console.error(`fail: ${name} ${e}`);
-    console.group();
+    console.error(`${indent}fail: ${name} ${e}`);
     if (!(e instanceof ExpectationError)) {
       console.debug(e.stack);
     } else if (e.data) {
       writeExpectatinData(e.data);
     }
-    console.groupEnd();
-    console.groupEnd();
     return false;
   }
 }
-const summarizeTests = (passed, failed) => {
-  const total = passed + failed;
-  if (failed === 0) {
-    console.info('Success:', passed, 'of', total, 'tests passed.');
+const summarizeTests = (state) => {
+  const {
+    passed,
+    failed,
+    skipped
+  } = state;
+
+  const args = [];
+  if (failed > 0) {
+    args.push(failed, 'tests failed');
+  }
+  if (passed > 0) {
+    args.push(passed, 'of', passed + failed, 'tests passed');
+  }
+
+  if (skipped > 0) {
+    args.push(skipped, 'test skipped');
+  }
+
+  if (failed > 0) {
+    console.error('Failed:', ...args);
+  } else if (passed > 0) {
+    console.info('Success:', ...args);
+  } else if (skipped > 0) {
+    console.info('Skipped:', ...args);
   } else {
-    console.error('Failed:', failed, 'and', passed, 'of', total, 'passed.');
+    console.info('No tests found.');
   }
 }
 const writeExpectatinData = data => {
