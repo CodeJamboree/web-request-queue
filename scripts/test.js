@@ -12,6 +12,7 @@ import * as msPerRequestTests from './tests/request/msPerRequest.js';
 import * as delayProgressTests from './tests/progress/delayProgress.js';
 import * as msPerProgressTests from './tests/progress/msPerProgress.js';
 import * as showProgressTests from './tests/progress/showProgress.js';
+import * as beforeRequestTests from './tests/request/beforeRequest.test.js';
 
 const excess = 10;
 
@@ -22,7 +23,8 @@ const main = async () => {
     msPerRequestTests,
     delayProgressTests,
     msPerProgressTests,
-    showProgressTests
+    showProgressTests,
+    beforeRequestTests
   ];
 
   let passed = 0;

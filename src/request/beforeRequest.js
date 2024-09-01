@@ -2,10 +2,10 @@ import { state } from '../state.js';
 import { timeLogger } from '../progress/timeLogger.js';
 
 export const beforeRequest = () => {
-  state.setNow('lastRequest');
-  if (!state.get('firstRequest')) {
+  state.set('lastAt', new Date());
+  if (!state.get('firstAt')) {
     timeLogger.start();
-    state.setNow('firstRequest');
+    state.set('firstAt', new Date());
   }
-  state.increment('requestCount');
+  state.set('requestCount', state.get('requestCount') + 1);
 }

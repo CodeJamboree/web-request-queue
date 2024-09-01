@@ -6,19 +6,19 @@ import { timeLogger } from './timeLogger.js';
 
 export const showProgress = () => {
 
-  const firstRequest = state.get('firstRequest');
-  if (!firstRequest) return;
+  const firstAt = state.get('firstAt');
+  if (!firstAt) return;
   const delayMs = delayProgress();
   if (delayMs) return;
 
   const requestCount = state.get('requestCount');
-  const totalExpected = state.get('totalExpected');
+  const expectedCount = state.get('expectedCount');
   const queueCount = state.count('queue');
   const priorRemainingCount = state.get('priorRemainingCount');
   const priorPresumedTotal = state.get('priorPresumedTotal');
 
-  const remainingCount = totalExpected ?
-    Math.max(queueCount, totalExpected - requestCount) :
+  const remainingCount = expectedCount ?
+    Math.max(queueCount, expectedCount - requestCount) :
     queueCount;
 
   const presumedTotal = remainingCount + requestCount;
@@ -27,7 +27,7 @@ export const showProgress = () => {
     priorPresumedTotal === presumedTotal
   ) return;
 
-  state.setNow('lastProgress');
+  state.set('progressedAt', new Date());
   state.set('priorRemainingCount', remainingCount);
   state.set('priorPresumedTotal', presumedTotal);
 
@@ -36,7 +36,7 @@ export const showProgress = () => {
     stats.push('of', presumedTotal);
   }
   if (requestCount > 0 && remainingCount > 0) {
-    const msElapsed = timeSince(firstRequest);
+    const msElapsed = timeSince(firstAt);
     if (msElapsed > 0) {
       const msPerReq = msElapsed / requestCount;
       const msRemaining = remainingCount * msPerReq;

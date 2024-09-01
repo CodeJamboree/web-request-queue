@@ -27,7 +27,7 @@ const delayedStart = () => {
 }
 
 const startInterval = () => {
-  if (state.hasNone('queue')) return;
+  if (state.count('queue') === 0) return;
   const ms = msPerProgress();
   state.progressIntervalId = setInterval(showProgress, adjustTimeout(ms));
   showProgress();

@@ -6,7 +6,7 @@ export const name = 'delayProgress';
 
 export const delayProgressFullDelay = () => {
   state.set('progressSeconds', 10);
-  state.set('lastProgress', new Date());
+  state.set('progressedAt', new Date());
   expect(delayProgress()).is(10000);
 }
 export const delayProgressOneMs = () => {
@@ -15,7 +15,7 @@ export const delayProgressOneMs = () => {
   state.set('progressSeconds', seconds);
   const date = new Date();
   date.setTime(date.getTime() - (ms - 1));
-  state.set('lastProgress', date);
+  state.set('progressedAt', date);
   expect(delayProgress()).is(1);
 }
 export const delayProgressExpireNow = () => {
@@ -24,7 +24,7 @@ export const delayProgressExpireNow = () => {
   state.set('progressSeconds', seconds);
   const date = new Date();
   date.setTime(date.getTime() - ms);
-  state.set('lastProgress', date);
+  state.set('progressedAt', date);
   expect(delayProgress()).is(false);
 }
 export const delayProgressExpire1ms = () => {
@@ -33,6 +33,6 @@ export const delayProgressExpire1ms = () => {
   state.set('progressSeconds', seconds);
   const date = new Date();
   date.setTime(date.getTime() - (ms + 1));
-  state.set('lastProgress', date);
+  state.set('progressedAt', date);
   expect(delayProgress()).is(false);
 }

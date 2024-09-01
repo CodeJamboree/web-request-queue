@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { startTimers } from './timers/startTimers.js';
 
 export const queue = ({ args, onRequested, onCancel }) => {
-  if (!state.get('allowNewRequests')) {
+  if (state.get('isBlocked')) {
     throw new Error(`Not allowing new requests.`);
   }
   if (!Array.isArray(args) || args.length <= 0) {

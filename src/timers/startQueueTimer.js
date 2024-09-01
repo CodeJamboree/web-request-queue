@@ -30,7 +30,7 @@ const delayedStart = () => {
 }
 
 const startInterval = () => {
-  if (state.hasNone('queue')) return;
+  if (state.count('queue') === 0) return;
   const ms = msPerRequest() + padMs;
   state.set('pendingIntervalId', setInterval(onNextRequest, Math.max(minMs, ms)));
   onNextRequest();
