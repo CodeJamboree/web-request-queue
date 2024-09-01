@@ -107,11 +107,10 @@ const runTest = async ([name, test], i, a, state, depth, location) => {
     afterEach();
     state.failures.push(`${location} ${name} ${e}`);
     console.error(`${indent}fail: ${name} ${e}`);
-    if (!(e instanceof ExpectationError)) {
-      console.debug(e.stack);
-    } else if (e.data) {
+    if ((e instanceof ExpectationError) && e.data) {
       writeExpectationData(e.data);
     }
+    console.debug(e.stack);
   }
 }
 const summarizeTests = (state) => {

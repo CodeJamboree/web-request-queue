@@ -4,7 +4,8 @@ import { msPerRequest } from './msPerRequest.js';
 
 export const delayRequest = () => {
   if (!state.get('lastAt')) return false;
-  let delta = msPerRequest() - timeSince(state.get('lastAt'));
+  const fullDelay = msPerRequest();
+  let delta = fullDelay - timeSince(state.get('lastAt'));
   if (delta <= 0) return false;
-  return delta;
+  return Math.min(delta, fullDelay);
 }
