@@ -1,6 +1,6 @@
-import { expect } from '../utils/expect.js';
-import { state } from '../../src/state.js';
-import { msPerRequest } from '../../src/request/msPerRequest.js';
+import { expect } from '../../utils/expect.js';
+import { state } from '../../../src/state.js';
+import { msPerRequest } from '../../../src/request/msPerRequest.js';
 
 export const name = 'msPerRequest';
 

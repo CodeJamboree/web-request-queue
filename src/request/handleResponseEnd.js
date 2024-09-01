@@ -1,4 +1,4 @@
-import { stopPendingRequests } from './cancelQueuedRequests.js';
+import { cancelQueuedRequests } from './cancelQueuedRequests.js';
 
 export const handleResponseEnd = (response, onCancel) => () => {
   const { statusCode = 200, statusMessage } = response;
@@ -11,7 +11,7 @@ export const handleResponseEnd = (response, onCancel) => () => {
       throw new Error(reason);
     }
   } catch (e) {
-    stopPendingRequests(`A prior request ended with: ${reason}`);
+    cancelQueuedRequests(`A prior request ended with: ${reason}`);
     throw e;
   }
 }

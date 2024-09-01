@@ -1,4 +1,4 @@
-import { stopPendingRequests } from './cancelQueuedRequests.js';
+import { cancelQueuedRequests } from './cancelQueuedRequests.js';
 
 export const handleResponseError = (_response, onCancel) => error => {
   try {
@@ -8,7 +8,7 @@ export const handleResponseError = (_response, onCancel) => error => {
       throw error;
     }
   } catch (e) {
-    stopPendingRequests(`A prior request had an error: ${error}`);
+    cancelQueuedRequests(`A prior request had an error: ${error}`);
     throw e;
   }
 }

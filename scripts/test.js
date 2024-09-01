@@ -2,10 +2,13 @@ import * as stdout from "./utils/stdout.js";
 import { state } from '../src/state.js';
 import { stopTimers } from "../src/timers/stopTimers.js";
 import { timeLogger } from '../src/progress/timeLogger.js';
+import { dateMocker } from "./utils/dateMocker.js";
+import { performanceMocker } from "./utils/performanceMocker.js";
+import { ExpectationError } from './utils/ExpectationError.js';
 
 import * as setThrottleMaxTests from './tests/setThrottleMax.js';
 import * as setThrottlePeriodTests from './tests/setThrottlePeriod.js';
-import * as msPerRequestTests from './tests/msPerRequest.js';
+import * as msPerRequestTests from './tests/request/msPerRequest.js';
 import * as delayProgressTests from './tests/progress/delayProgress.js';
 import * as msPerProgressTests from './tests/progress/msPerProgress.js';
 import * as showProgressTests from './tests/progress/showProgress.js';
@@ -48,13 +51,20 @@ const afterAll = () => {
   stdout.disableBuffer();
 }
 const beforeEach = () => {
+  stdout.hideOutput();
+
   stopTimers();
   state.reset();
+
   stdout.resetBuffer();
-  stdout.hideOutput();
+
+  dateMocker.freeze();
+  performanceMocker.freeze();
 }
 const afterEach = () => {
   timeLogger.stop();
+  dateMocker.restore();
+  performanceMocker.restore();
   stdout.showOutput();
 }
 const runTest = async (test, i, a) => {
@@ -77,6 +87,13 @@ const runTest = async (test, i, a) => {
     afterEach();
     console.group();
     console.error(`fail: ${name} ${e}`);
+    console.group();
+    if (!(e instanceof ExpectationError)) {
+      console.debug(e.stack);
+    } else if (e.data) {
+      writeExpectatinData(e.data);
+    }
+    console.groupEnd();
     console.groupEnd();
     return false;
   }
@@ -89,12 +106,35 @@ const summarizeTests = (passed, failed) => {
     console.error('Failed:', failed, 'and', passed, 'of', total, 'passed.');
   }
 }
+const writeExpectatinData = data => {
+  Object.keys(data).forEach(key => {
+    switch (key) {
+      case 'expected':
+      case 'expectedValue':
+        console.info('Expected:', data[key]);
+        break;
+      case 'actual':
+      case 'actualValue':
+        console.info('Actual:', data[key]);
+        break;
+      case 'details':
+        if (data[key] !== undefined) {
+          console.debug('Details:', data[key]);
+        }
+        break;
+      default:
+        console.debug(`${key}:`, data[key]);
+    }
+  })
+}
 
 try {
   console.info('Test')
   main()
     .catch(e => console.error(e))
-    .finally(() => console.info('done'));
+    .finally(() => {
+      console.info('done');
+    });
 } catch (e) {
   console.error(e);
   console.info('done');
