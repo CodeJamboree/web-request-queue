@@ -4,8 +4,6 @@ import { state } from '../../src/state.js';
 
 const stateKey = 'throttleCount';
 
-export const name = 'setThrottleMax';
-
 export const setThrottleMax1 = () => {
   setThrottleMax(1);
   expect(state.get(stateKey)).is(1);

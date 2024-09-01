@@ -14,7 +14,9 @@ const main = async () => {
   const state = {
     passed: 0,
     failed: 0,
-    skipped: 0
+    skipped: 0,
+    failures: [],
+    hidePassing: true
   }
   beforeAll();
 
@@ -24,22 +26,27 @@ const main = async () => {
   summarizeTests(state);
 }
 
-const runSuites = async (suites, state, depth = 0) => {
+const runSuites = async (suites, state, depth = 0, location = '') => {
   const keys = Object.keys(suites);
   const indent = depth === 0 ? '' : ' '.repeat(depth);
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
+    if (key.startsWith("x_")) {
+      console.info(`${indent}skipped ${key}`);
+      state.skipped++;
+      continue;
+    }
 
     console.info(`${indent}${key}`);
     const suite = suites[key];
+    const suiteLocation = location === '' ? key : `${location}/${key}`;
 
-    const tests = Object.values(suite).filter(test => typeof test === 'function');
+    const tests = Object.entries(suite).filter(([name, test]) => typeof test === 'function');
     if (tests.length === 0) {
-      await runSuites(suite, state, depth + 1);
+      await runSuites(suite, state, depth + 1, suiteLocation);
     } else {
       for (let i = 0; i < tests.length; i++) {
-        const pass = await runTest(tests[i], i, tests, depth + 1);
-        if (pass) state.passed++; else state.failed++;
+        await runTest(tests[i], i, tests, state, depth + 1, suiteLocation);
       }
     }
   }
@@ -70,62 +77,74 @@ const afterEach = () => {
   performanceMocker.restore();
   stdout.showOutput();
 }
-const runTest = async (test, i, a, depth) => {
-  const { name } = test;
+const runTest = async ([name, test], i, a, state, depth, location) => {
   const indent = ' '.repeat(depth);
+  if (name.startsWith('x_')) {
+    state.skipped++;
+    if (i < excess) {
+      console.debug(`${indent}skip: ${name}`);
+    } else if (i === excess) {
+      console.debug(`${indent}...`);
+    }
+    return;
+  }
   try {
     beforeEach();
     await test();
+    state.passed++;
     afterEach();
-    if (i < excess) {
-      console.info(`${indent}pass: ${name}`);
-    } else if (i === excess) {
-      console.debug(`${indent}pass: ...`);
-    } else if (i === a.length - 1) {
-      console.info(`${indent}pass: ${name}`);
+    if (!state.hidePassing) {
+      if (i < excess) {
+        console.info(`${indent}pass: ${name}`);
+      } else if (i === excess) {
+        console.debug(`${indent}pass: ...`);
+      } else if (i === a.length - 1) {
+        console.info(`${indent}pass: ${name}`);
+      }
     }
-    return true;
   } catch (e) {
+    state.failed++;
     afterEach();
+    state.failures.push(`${location} ${name} ${e}`);
     console.error(`${indent}fail: ${name} ${e}`);
     if (!(e instanceof ExpectationError)) {
       console.debug(e.stack);
     } else if (e.data) {
-      writeExpectatinData(e.data);
+      writeExpectationData(e.data);
     }
-    return false;
   }
 }
 const summarizeTests = (state) => {
   const {
     passed,
     failed,
-    skipped
+    skipped,
+    failures
   } = state;
 
-  const args = [];
-  if (failed > 0) {
-    args.push(failed, 'tests failed');
-  }
-  if (passed > 0) {
-    args.push(passed, 'of', passed + failed, 'tests passed');
-  }
-
-  if (skipped > 0) {
-    args.push(skipped, 'test skipped');
+  if (failures.length > 0) {
+    console.group('Failures');
+    failures.forEach(failure => {
+      console.error(failure);
+    });
+    console.groupEnd();
   }
 
-  if (failed > 0) {
-    console.error('Failed:', ...args);
-  } else if (passed > 0) {
-    console.info('Success:', ...args);
-  } else if (skipped > 0) {
-    console.info('Skipped:', ...args);
-  } else {
-    console.info('No tests found.');
+  if (passed + failed + skipped === 0) {
+    console.error('No tests present');
   }
+  if (passed !== 0) {
+    console.info('Passed:', passed);
+  }
+  if (failed !== 0) {
+    console.error('Failed:', failed);
+  }
+  if (skipped !== 0) {
+    console.warn('Skipped:', skipped);
+  }
+  console.debug('Total:', passed + failed + skipped);
 }
-const writeExpectatinData = data => {
+const writeExpectationData = data => {
   Object.keys(data).forEach(key => {
     switch (key) {
       case 'expected':

@@ -4,8 +4,6 @@ import { setThrottlePeriod } from '../../src/setThrottlePeriod.js';
 
 const stateKey = 'throttleSeconds';
 
-export const name = 'setThrottlePeriod';
-
 export const setThrottlePeriod1 = () => {
   setThrottlePeriod(1);
   expect(state.get(stateKey)).is(1);

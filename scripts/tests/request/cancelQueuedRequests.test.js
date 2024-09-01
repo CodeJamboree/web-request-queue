@@ -4,9 +4,7 @@ import { cancelQueuedRequests } from '../../../src/request/cancelQueuedRequests.
 import { mockFn } from '../../utils/mockFn.js';
 import { stdout } from '../../utils/stdout.js';
 
-export const name = 'cancelQueuedRequests';
-
-export const cancelQueuedRequestsTest = async () => {
+export const mainFlow = async () => {
 
   const timeoutDelay = 100;
 
@@ -55,7 +53,7 @@ export const cancelQueuedRequestsTest = async () => {
   await promise;
 }
 
-export const cancelQueuedRequestsWithoutQueueTest = () => {
+export const withoutQueue = () => {
 
   expect(state.count('queue'), 'queue').is(0);
 
@@ -66,7 +64,7 @@ export const cancelQueuedRequestsWithoutQueueTest = () => {
   expect(stdout.getBuffer()).equals([]);
 }
 
-export const cancelQueuedRequestsWithCustomReason = () => {
+export const customReason = () => {
   const mockCancel1 = mockFn();
   state.append('queue', { onCancel: mockCancel1 });
   const reason = 'My custom reason';
