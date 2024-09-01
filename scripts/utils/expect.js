@@ -1,57 +1,50 @@
 import { ExpectationError } from './ExpectationError.js';
+import { serialize } from './serialize.js';
 
-export const expect = (actualValue, details) => {
-  const serialize = value => JSON.stringify(value, (key, value) => {
-    if (value instanceof Error) return value.message;
-    if (typeof value === 'function') {
-      let name = value.name;
-      if ((name ?? '') === '') return '{function}';
-      return `{${name}}`;
-    }
-    return value;
-  }, '  ');
+export const expect = (actual, details) => {
+
   return ({
-    equals: expectedValue => {
-      const actual = serialize(actualValue);
-      const expected = serialize(expectedValue);
-      if (actual !== expected) {
-        throw new ExpectationError(`Expected equal`, { details, expectedValue, actualValue });
+    equals: expected => {
+      const a = serialize(actual);
+      const e = serialize(expected);
+      if (a !== e) {
+        throw new ExpectationError(`equal`, { details, expected, actual });
       }
     },
     isFunction: () => {
-      if (typeof actualValue === 'function') return;
-      throw new ExpectationError(`Expected function`, { details, actualValue });
+      if (typeof actual === 'function') return;
+      throw new ExpectationError(`function`, { details, actual });
     },
-    is: expectedValue => {
-      if (actualValue === expectedValue) return;
-      throw new ExpectationError(`Expected same`, { details, expectedValue, actualValue });
+    is: expected => {
+      if (actual === expected) return;
+      throw new ExpectationError(`same`, { details, expected, actual });
     },
-    lengthOf: expectedValue => {
-      if (actualValue.length === expectedValue) return;
-      throw new ExpectationError(`Expected same length`, { details, expectedValue, actualValue });
+    lengthOf: expected => {
+      if (actual.length === expected) return;
+      throw new ExpectationError(`length`, { details, expected, actual });
     },
-    startsWith: expectedValue => {
-      if (actualValue.startsWith(expectedValue)) return;
-      throw new ExpectationError(`Expected beginning`, { details, expectedValue, actualValue });
+    startsWith: expected => {
+      if (actual.startsWith(expected)) return;
+      throw new ExpectationError(`beginning`, { details, expected, actual });
     },
-    includes: expectedValue => {
-      if (actualValue.includes(expectedValue)) return;
-      throw new ExpectationError(`Expected to include`, { details, expectedValue, actualValue });
+    includes: expected => {
+      if (actual.includes(expected)) return;
+      throw new ExpectationError(`including`, { details, expected, actual });
     },
-    endsWith: expectedValue => {
-      if (actualValue.endsWith(expectedValue)) return;
-      throw new ExpectationError(`Expected ending`, { details, expectedValue, actualValue });
+    endsWith: expected => {
+      if (actual.endsWith(expected)) return;
+      throw new ExpectationError(`ending`, { details, expected, actual });
     },
     toThrow: error => {
       let thrown = true;
       try {
-        actualValue();
+        actual();
         thrown = false;
       } catch (e) {
         expect(e, details).equals(error);
       }
       if (!thrown)
-        throw new ExpectationError(`Expected to throw`, { details, error, actualValue })
+        throw new ExpectationError(`throws`, { details, error, actual })
     }
   })
 }

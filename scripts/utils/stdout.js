@@ -1,4 +1,8 @@
-const log = process.stdout.write.bind(process.stdout);
+const original = {
+  stdout: {
+    write: process.stdout.write.bind(process.stdout)
+  }
+}
 
 let visible = true;
 const buffer = [];
@@ -13,7 +17,7 @@ export const setBufferLimit = limit => {
 }
 
 export const disableBuffer = () => {
-  process.stdout.write = log;
+  process.stdout.write = original.stdout.write;
   resetBuffer();
 };
 export const enableBuffer = () => {
@@ -28,11 +32,28 @@ export const showOutput = () => {
 export const getBuffer = () => [...buffer];
 export const resetBuffer = () => buffer.length = 0;
 
-const wrapOutput = (...args) => {
-  buffer.push(args);
+export const stdout = {
+  setBufferLimit,
+  disableBuffer,
+  enableBuffer,
+  hideOutput,
+  showOutput,
+  getBuffer,
+  resetBuffer
+}
+
+const isLastFunction = (v, i, a) => i === a.length - 1 && typeof v === 'function';
+
+const wrapOutput = (...originalArgs) => {
+  const callback = originalArgs.find(isLastFunction);
+  let noCallback = originalArgs.filter((...a) => !isLastFunction(...a));
+  let preferNonArray = noCallback.length <= 1 ? noCallback[0] : noCallback
+  buffer.push(preferNonArray);
   removeExcess();
   if (visible) {
-    log(...args);
+    original.stdout.write(...originalArgs);
+  } else if (callback) {
+    callback(null);
   }
 }
 

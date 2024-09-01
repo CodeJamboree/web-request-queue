@@ -5,13 +5,6 @@ import { timeLogger } from '../../../src/progress/timeLogger.js';
 
 export const name = 'beforeRequest';
 
-// state.set('lastAt', new Date());
-//   if (!state.get('firstAt')) {
-//     timeLogger.start();
-//     state.set('firstAt', new Date());
-//   }
-//     state.set('requestCount', state.get('requestCount') + 1);
-
 export const beforeRequestFirstRequst = () => {
   state.remove('lastAt');
   state.remove('firstAt');

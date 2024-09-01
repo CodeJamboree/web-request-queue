@@ -1,19 +1,29 @@
-const NO_DATE = new Date(0);
-const NO_NUM = Number.MIN_SAFE_INTEGER;
+const isDate = value => value instanceof Date;
+const isTimeout = value => {
+  const type = typeof value;
+  switch (type) {
+    case 'object':
+      return value?.constructor?.name === 'Timeout';
+    case 'number':
+      return true;
+    default:
+      return false;
+  }
+}
 
 const initialState = {
-  lastAt: NO_DATE,
-  firstAt: NO_DATE,
-  progressedAt: NO_DATE,
+  lastAt: isDate,
+  firstAt: isDate,
+  progressedAt: isDate,
 
   isBlocked: false,
 
   queue: [],
 
-  progressIntervalId: NO_NUM,
-  progressTimeoutId: NO_NUM,
-  pendingIntervalId: NO_NUM,
-  pendingTimeoutId: NO_NUM,
+  progressIntervalId: isTimeout,
+  progressTimeoutId: isTimeout,
+  queueIntervalId: isTimeout,
+  queueTimeoutId: isTimeout,
 
   requestCount: 0,
   expectedCount: 1,
@@ -33,7 +43,7 @@ class State {
   get(key) {
     this.ensureNotArray(key);
     const value = this.state[key];
-    if (value === NO_DATE || value === NO_NUM) return;
+    if (typeof value === 'function') return;
     return value;
   }
   set(key, value) {
@@ -64,15 +74,10 @@ class State {
   remove(key) {
     this.ensureNotArray(key);
     const original = initialState[key];
-    switch (original) {
-      case NO_DATE:
-        this.state[key] = NO_DATE;
-        break;
-      case NO_NUM:
-        this.state[key] = NO_NUM;
-      default:
-        throw new Error(`Unable to remove ${key}`);
+    if (typeof original !== 'function') {
+      throw new Error(`Unable to remove ${key}`);
     }
+    this.state[key] = initialState[key];
   }
   reset() {
     this.state = { ...initialState };
@@ -90,17 +95,17 @@ class State {
     const originalKeyValue = initialState[key];
     const keyType = typeof originalKeyValue;
     if (valueType !== keyType) {
-      throw new `Unable to set ${key} as ${valueType}. Expected ${keyType}.`
+      if (valueType === 'object' && keyType === 'function') {
+        if (!originalKeyValue(value)) {
+          throw new Error(`Unable to set ${key} as ${value?.constructor?.name ?? valueType}. Expected ${originalKeyValue.name}.`);
+        }
+      } else {
+        throw new Error(`Unable to set ${key} as ${valueType}. Expected ${keyType}.`);
+      }
     }
 
-    if (keyType === 'object') {
-      if (originalKeyValue instanceof Date) {
-        if (!(value instanceof Date)) {
-          throw new `Expected ${key} to be date. ${value}`;
-        }
-      } else if (Array.isArray(originalKeyValue)) {
-        throw new `Unable to set ${key} directly. Use append, prepend, removeAll, removeFirst`;
-      }
+    if (Array.isArray(originalKeyValue)) {
+      throw new `Unable to set ${key} directly. Use append, prepend, removeAll, removeFirst`;
     }
   }
   ensureNumeric(key) {

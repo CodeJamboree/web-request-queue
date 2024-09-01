@@ -7,7 +7,7 @@ export const setThrottleMax = max => {
     throw new Error(`Max requests per period must be 1 or more. Got ${max}.`);
   }
   state.set('throttleCount', max);
-  if (state.get('pendingIntervalId') || state.get('pendingTimeoutId')) {
+  if (state.get('queueIntervalId') || state.get('queueTimeoutId')) {
     stopQueueTimer();
     startQueueTimer();
   }

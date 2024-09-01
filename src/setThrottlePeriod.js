@@ -7,7 +7,7 @@ export const setThrottlePeriod = seconds => {
     throw new Error(`Seconds per throttle period must be 1 or more. Got ${seconds}.`);
   }
   state.set('throttleSeconds', seconds);
-  if (state.get('pendingIntervalId') || state.get('pendingTimeoutId')) {
+  if (state.get('queueIntervalId') || state.get('queueTimeoutId')) {
     stopQueueTimer();
     startQueueTimer();
   }

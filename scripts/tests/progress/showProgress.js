@@ -31,8 +31,7 @@ export const showProgressJustStartedNow = () => {
   state.set('priorRemainingCount', 1);
   state.set('priorPresumedTotal', expectedCount + 1);
   showProgress();
-  const [[message]] = stdout.getBuffer();
-  expect(message).equals(
+  expect(stdout.getBuffer()[0]).equals(
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${expectedCount}\u001b[39m\n`
   );
 }
@@ -52,8 +51,7 @@ export const showProgressAfter499Nanoseconds = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 0ms`
   );
 }
@@ -62,8 +60,7 @@ export const showProgressAfter500Nanoseconds = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 0.001ms`
   );
 }
@@ -72,8 +69,7 @@ export const showProgressAfterMicrosecond = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 0.001ms`
   );
 }
@@ -82,8 +78,7 @@ export const showProgressAfterMillisecond = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1ms`
   );
 }
@@ -92,8 +87,7 @@ export const showProgressAfterSecond = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1.000s`
   );
 }
@@ -102,8 +96,7 @@ export const showProgressAfterMinute = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1:00.000 (m:ss.mmm)`
   );
 }
@@ -112,8 +105,7 @@ export const showProgressAfterHour = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1:00:00.000 (h:mm:ss.mmm)`
   );
 }
@@ -122,8 +114,7 @@ export const showProgressAfterDay = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 24:00:00.000 (h:mm:ss.mmm)`
   );
 }
@@ -132,8 +123,7 @@ export const showProgressAfterYear = () => {
   const requested = 10;
   const total = 200;
   foo(requested, total);
-  const [[message]] = stdout.getBuffer();
-  expect(message).startsWith(
+  expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 8760:00:00.000 (h:mm:ss.mmm)`
   );
 }
@@ -169,8 +159,9 @@ export const showProgressWithTimeRemaining = () => {
   state.set('priorPresumedTotal', 1 + expectedCount);
   showProgress();
   const msRemaining = 900;
-  const [[message]] = stdout.getBuffer();
-  expect(message).equals(`Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${expectedCount}\u001b[39m ~ 0.${msRemaining}s\n`);
+  expect(stdout.getBuffer()).equals([
+    `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${expectedCount}\u001b[39m ~ 0.${msRemaining}s\n`
+  ]);
 }
 
 export const showProgressWithPendingMoreThanTotal = () => {
@@ -191,8 +182,9 @@ export const showProgressWithPendingMoreThanTotal = () => {
   state.set('priorPresumedTotal', 1 + expectedCount);
   showProgress();
   const msRemaining = 200;
-  const [[message]] = stdout.getBuffer();
-  expect(message).equals(`Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${requestCount + queueCount}\u001b[39m ~ 0.${msRemaining}s\n`);
+  expect(stdout.getBuffer()).equals([
+    `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${requestCount + queueCount}\u001b[39m ~ 0.${msRemaining}s\n`
+  ]);
 }
 export const showProgressWithoutTotalOrPending = () => {
   performanceMocker.set(0);
@@ -209,7 +201,7 @@ export const showProgressWithoutTotalOrPending = () => {
   state.set('priorRemainingCount', 999);
   state.set('priorPresumedTotal', 999);
   showProgress();
-  const [[message]] = stdout.getBuffer();
+  const [message] = stdout.getBuffer();
   expect(message).equals(`Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m\n`);
 }
 const setDelay = (ms) => {
