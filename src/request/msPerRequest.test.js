@@ -1,6 +1,6 @@
-import { expect } from '../../utils/expect.js';
-import { state } from '../../../src/state.js';
-import { msPerRequest } from '../../../src/request/msPerRequest.js';
+import { expect } from '../../scripts/utils/expect.js';
+import { state } from '../state.js';
+import { msPerRequest } from './msPerRequest.js';
 
 export const msPerRequest10perSecond = () => {
   state.set('throttleCount', 10);

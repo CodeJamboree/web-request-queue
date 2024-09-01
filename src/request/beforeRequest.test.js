@@ -1,7 +1,7 @@
-import { expect } from '../../utils/expect.js';
-import { state } from '../../../src/state.js';
-import { beforeRequest } from '../../../src/request/beforeRequest.js';
-import { timeLogger } from '../../../src/progress/timeLogger.js';
+import { expect } from '../../scripts/utils/expect.js';
+import { state } from '../state.js';
+import { beforeRequest } from './beforeRequest.js';
+import { timeLogger } from '../progress/timeLogger.js';
 
 export const name = 'beforeRequest';
 

@@ -10,7 +10,7 @@ import { getModules } from './utils/getModules.js';
 const excess = 10;
 
 const main = async () => {
-  const suites = await getModules('scripts/tests');
+  const suites = await getModules('src', /\.test\.js$/, '');
   const state = {
     passed: 0,
     failed: 0,

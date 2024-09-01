@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export const getModules = async (dir, pattern = /\.test\.js$/, replacement = '') => {
+export const getModules = async (dir, pattern, replacement) => {
   if (!fs.existsSync(dir)) return;
   const files = fs.readdirSync(dir);
   if (files.length === 0) return;
@@ -12,14 +12,15 @@ export const getModules = async (dir, pattern = /\.test\.js$/, replacement = '')
     const file = files[i];
     const filePath = path.join(dir, file);
     if (fs.lstatSync(filePath).isDirectory()) {
-      const children = await getModules(filePath);
+      const children = await getModules(filePath, pattern, replacement);
       if (children) {
         modules[file] = children;
       }
     } else {
       if (pattern.test(file)) {
         const name = file.replace(pattern, replacement);
-        modules[name] = await import('../../' + filePath);
+        const fullPath = path.resolve(process.cwd(), filePath);
+        modules[name] = await import(fullPath);
       }
     }
   }

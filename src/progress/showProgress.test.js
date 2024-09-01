@@ -1,9 +1,9 @@
-import * as stdout from "../../utils/stdout.js";
-import { expect } from '../../utils/expect.js';
-import { state } from '../../../src/state.js';
-import { showProgress } from '../../../src/progress/showProgress.js';
-import { dateMocker } from '../../utils/dateMocker.js';
-import { performanceMocker } from "../../utils/performanceMocker.js";
+import * as stdout from "../../scripts/utils/stdout.js";
+import { expect } from '../../scripts/utils/expect.js';
+import { state } from '../state.js';
+import { showProgress } from './showProgress.js';
+import { dateMocker } from '../../scripts/utils/dateMocker.js';
+import { performanceMocker } from "../../scripts/utils/performanceMocker.js";
 
 export const name = 'showProgress';
 

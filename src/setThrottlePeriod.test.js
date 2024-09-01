@@ -1,6 +1,6 @@
-import { expect } from '../utils/expect.js';
-import { state } from '../../src/state.js';
-import { setThrottlePeriod } from '../../src/setThrottlePeriod.js';
+import { expect } from '../scripts/utils/expect.js';
+import { state } from './state.js';
+import { setThrottlePeriod } from './setThrottlePeriod.js';
 
 const stateKey = 'throttleSeconds';
 

@@ -1,8 +1,8 @@
-import { expect } from '../../utils/expect.js';
-import { state } from '../../../src/state.js';
-import { cancelQueuedRequests } from '../../../src/request/cancelQueuedRequests.js';
-import { mockFn } from '../../utils/mockFn.js';
-import { stdout } from '../../utils/stdout.js';
+import { expect } from '../../scripts/utils/expect.js';
+import { state } from '../state.js';
+import { cancelQueuedRequests } from './cancelQueuedRequests.js';
+import { mockFn } from '../../scripts/utils/mockFn.js';
+import { stdout } from '../../scripts/utils/stdout.js';
 
 export const mainFlow = async () => {
 

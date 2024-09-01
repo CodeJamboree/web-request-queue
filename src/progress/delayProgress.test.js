@@ -1,6 +1,6 @@
-import { expect } from '../../utils/expect.js';
-import { state } from '../../../src/state.js';
-import { delayProgress } from '../../../src/progress/delayProgress.js';
+import { expect } from '../../scripts/utils/expect.js';
+import { state } from '../state.js';
+import { delayProgress } from './delayProgress.js';
 
 export const name = 'delayProgress';
 

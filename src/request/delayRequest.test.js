@@ -1,6 +1,6 @@
-import { expect } from '../../utils/expect.js';
-import { state } from '../../../src/state.js';
-import { delayRequest } from '../../../src/request/delayRequest.js';
+import { expect } from '../../scripts/utils/expect.js';
+import { state } from '../state.js';
+import { delayRequest } from './delayRequest.js';
 
 export const neverRequested = () => {
   state.remove('lastAt');

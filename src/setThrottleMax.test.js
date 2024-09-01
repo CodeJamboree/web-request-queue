@@ -1,6 +1,6 @@
-import { setThrottleMax } from '../../src/setThrottleMax.js';
-import { expect } from '../utils/expect.js';
-import { state } from '../../src/state.js';
+import { setThrottleMax } from './setThrottleMax.js';
+import { expect } from '../scripts/utils/expect.js';
+import { state } from './state.js';
 
 const stateKey = 'throttleCount';
 

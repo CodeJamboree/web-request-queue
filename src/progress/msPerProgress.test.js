@@ -1,6 +1,6 @@
-import { expect } from '../../utils/expect.js';
-import { state } from '../../../src/state.js';
-import { msPerProgress } from '../../../src/progress/msPerProgress.js';
+import { expect } from '../../scripts/utils/expect.js';
+import { state } from '../state.js';
+import { msPerProgress } from './msPerProgress.js';
 
 export const name = 'msPerProgress';
 
