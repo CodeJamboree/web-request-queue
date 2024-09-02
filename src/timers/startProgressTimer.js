@@ -1,10 +1,11 @@
 import { state } from '../state.js';
-import { showProgress } from '../progress/showProgress.js';
+import { handleProgressInterval } from './handleProgressInterval.js';
 import { delayProgress } from '../progress/delayProgress.js';
 import { msPerProgress } from '../progress/msPerProgress.js';
 import { adjustTimeout } from './adjustTimeout.js';
 
 export const startProgressTimer = () => {
+  if (state.get('progressSeconds') === Infinity) return;
   if (
     state.get('progressIntervalId') ||
     state.get('progressTimeoutId')
@@ -31,9 +32,9 @@ const delayedStart = () => {
 
 const startInterval = () => {
   if (state.count('queue') === 0) return;
-  state.progressIntervalId = setInterval(
-    showProgress,
+  state.set('progressIntervalId', setInterval(
+    handleProgressInterval,
     adjustTimeout(msPerProgress())
-  );
-  showProgress();
+  ));
+  handleProgressInterval();
 }

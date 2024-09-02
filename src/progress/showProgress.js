@@ -6,10 +6,6 @@ import { timeLogger } from './timeLogger.js';
 
 export const showProgress = () => {
 
-  const firstAt = state.get('firstAt');
-  if (!firstAt) return;
-  const delayMs = delayProgress();
-  if (delayMs) return;
 
   const requestCount = state.get('requestCount');
   const expectedCount = state.get('expectedCount');
