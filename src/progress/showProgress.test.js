@@ -148,6 +148,7 @@ export const showProgressWithTimeRemaining = () => {
   const expectedCount = 100;
   const requestCount = 10;
   const msPassed = 10;
+  const msRemaining = "090";
   const firstAt = new Date();
   firstAt.setTime(firstAt.getTime() - msPassed);
   state.set('firstAt', firstAt);
@@ -158,7 +159,6 @@ export const showProgressWithTimeRemaining = () => {
   state.set('priorRemainingCount', expectedCount - requestCount);
   state.set('priorPresumedTotal', 1 + expectedCount);
   showProgress();
-  const msRemaining = 900;
   expect(stdout.getBuffer()).equals([
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${expectedCount}\u001b[39m ~ 0.${msRemaining}s\n`
   ]);
@@ -169,6 +169,7 @@ export const showProgressWithPendingMoreThanTotal = () => {
   const expectedCount = 2;
   const requestCount = 1;
   const msPassed = 10;
+  const msRemaining = "020";
   const firstAt = new Date();
   firstAt.setTime(firstAt.getTime() - msPassed);
   state.set('firstAt', firstAt);
@@ -181,7 +182,6 @@ export const showProgressWithPendingMoreThanTotal = () => {
   state.set('priorRemainingCount', expectedCount - requestCount);
   state.set('priorPresumedTotal', 1 + expectedCount);
   showProgress();
-  const msRemaining = 200;
   expect(stdout.getBuffer()).equals([
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${requestCount + queueCount}\u001b[39m ~ 0.${msRemaining}s\n`
   ]);

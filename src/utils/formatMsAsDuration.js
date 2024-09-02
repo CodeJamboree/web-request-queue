@@ -1,64 +1,91 @@
 
 import { msMap } from "./msMap.js";
 
-const units = ['y', 'mo', 'd', 'h', 'mi', 's', 'ms'];
+const units = ['y', 'mo', 'd', 'h', 'mi', 's', 'ms', '\u00B5s', 'ns', 'ps', 'fs', 'as', 'zs'];//, 'ys', 'rs', 'qs', 'p'];
+const msIndex = units.indexOf('ms');
 const maxUnits = 3;
 const delimiter = ':';
 
 export const formatMsAsDuration = ms => {
   if (ms === undefined || ms === null) return;
   if (typeof ms === 'string' && !isNaN(ms)) {
-    ms = parseInt(ms, 10);
+    ms = parseFloat(ms);
   }
+
   if (ms === 0) return 'instant';
   if (ms === Infinity) return 'forever';
   if (ms === -Infinity) return 'never';
+  if (ms > Number.MAX_SAFE_INTEGER) return 'distant future';
+  if (ms <= Number.MIN_SAFE_INTEGER) return 'distant past';
   if (typeof ms !== 'number') return;
 
-  let text = '';
+  let signed = false;
   if (ms < 0) {
-    text += '-';
+    signed = true;
     ms *= -1;
   }
-  return units.reduce(reducer, { ms, text, count: 0 }).text;
+  const parsed = units.reduce(reducer, { ms, parts: [], count: 0 });
+  if (parsed.parts.length === 0) {
+    return signed ? '-0s' : '0s';
+  }
+  let text = parsed.parts.reduce((duration, { text, unit, index }, i, a) => {
+    let prefix = '';
+    if (i === 0) {
+      if (unit === 'ms') {
+        prefix = '0.';
+      }
+    } else {
+      if (unit === 'ms') {
+        prefix = '.'
+      } else {
+        prefix = ':';
+      }
+    }
+
+    if (unit === 's' && i !== a.length - 1) {
+      return `${duration}${prefix}${text}`;
+    }
+    if (unit === 'ms') {
+      return `${duration}${prefix}${text}s`;
+    }
+    if (index > msIndex) {
+      return `${duration}${prefix}${text}${unit}`
+    } else {
+      return `${duration}${prefix}${text}${unit.charAt(0)}`
+    }
+  }, '');
+  return (signed ? '-' : '') + text;
 }
 
-const reducer = (state, unit) => {
-  if (state.count >= maxUnits) return state;
+const reducer = (state, unit, index) => {
+  if (state.parts.length >= maxUnits) return state;
 
   let unitMs = msMap[unit];
   const units = Math.floor(state.ms / unitMs);
   state.ms -= units * unitMs;
-  let first = !state.text.endsWith(delimiter);
+  let first = state.parts.length === 0;
 
-  // discard zero values until one of the
-  // units has a value - or we are evaluating seconds
-  if (units === 0 && first && unit !== 's') return state;
+  if (units === 0) {
+    if (state.parts.length === 0 || state.parts.length >= maxUnits) {
+      return state;
+    }
 
-  state.count++;
+    if (index >= msIndex) return state;
+
+  }
 
   // if prefixed with delimiter
   // make sure to pad with two digits
-  let pad = first ? 1 : 2;
+  let pad = first ? 1 : (index >= msIndex ? 3 : 2);
+  if (index === msIndex) pad = 3;
+
   let stringNum = units.toString();
 
-  switch (unit) {
-    case 'ms':
-      if (units > 0) {
-        state.text += '.';
-        state.text += stringNum.padEnd(3, '0');
-      }
-      state.text += 's';
-      break;
-    case 's':
-      state.text += stringNum.padStart(pad, '0');
-      if (state.count === maxUnits) state.text += unit;
-      break;
-    default:
-      state.text += stringNum.padStart(pad, '0');
-      state.text += unit.charAt(0);
-      if (state.count < maxUnits)
-        state.text += delimiter
-  }
+  state.parts.push({
+    text: stringNum.padStart(pad, '0'),
+    unit,
+    index
+  });
+
   return state;
 }
