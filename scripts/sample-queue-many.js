@@ -1,6 +1,6 @@
 import { webRequest } from '../src/index.js';
 
-// Sow progress once per second
+// Show progress once per second
 webRequest.setEvaluationSeconds(1);
 
 // Make only 1 request every 2 seconds

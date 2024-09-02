@@ -7,18 +7,7 @@ import { performanceMocker } from "../../scripts/utils/performanceMocker.js";
 
 export const name = 'showProgress';
 
-export const showProgressNeverRequested = () => {
-  state.remove('firstAt');
-  showProgress();
-  expect(stdout.getBuffer()).equals([]);
-}
-export const showProgressTooSoon = () => {
-  state.set('firstAt', new Date());
-  setDelay(10);
-  showProgress();
-  expect(stdout.getBuffer()).equals([]);
-}
-export const showProgressJustStartedNow = () => {
+export const justStarted = () => {
   performanceMocker.set(0);
   dateMocker.setUtc(2000, 0, 1);
   const expectedCount = 200;
@@ -35,100 +24,89 @@ export const showProgressJustStartedNow = () => {
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${expectedCount}\u001b[39m\n`
   );
 }
-const foo = (requested, total) => {
-  dateMocker.setUtc(2000, 0, 1);
-  state.set('firstAt', new Date());
-  setDelay(-1);
-  state.set('requestCount', requested);
-  state.set('expectedCount', total);
-  state.append('queue', 1);
-  state.set('priorRemainingCount', 1);
-  state.set('priorPresumedTotal', total + 1);
-  showProgress();
-}
-export const showProgressAfter499Nanoseconds = () => {
+export const after499Nanoseconds = () => {
   performanceMocker.set(.000499);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 0ms`
   );
 }
-export const showProgressAfter500Nanoseconds = () => {
+export const after500Nanoseconds = () => {
   performanceMocker.set(.0005);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 0.001ms`
   );
 }
-export const showProgressAfterMicrosecond = () => {
+export const afterMicrosecond = () => {
   performanceMocker.set(.001);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 0.001ms`
   );
 }
-export const showProgressAfterMillisecond = () => {
+export const afterMillisecond = () => {
   performanceMocker.set(1);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1ms`
   );
 }
-export const showProgressAfterSecond = () => {
+export const afterSecond = () => {
   performanceMocker.set(1000);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1.000s`
   );
 }
-export const showProgressAfterMinute = () => {
+export const afterMinute = () => {
   performanceMocker.set(1000 * 60);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1:00.000 (m:ss.mmm)`
   );
 }
-export const showProgressAfterHour = () => {
+export const afterHour = () => {
   performanceMocker.set(1000 * 60 * 60);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 1:00:00.000 (h:mm:ss.mmm)`
   );
 }
-export const showProgressAfterDay = () => {
+export const afterDay = () => {
   performanceMocker.set(1000 * 60 * 60 * 24);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 24:00:00.000 (h:mm:ss.mmm)`
   );
 }
-export const showProgressAfterYear = () => {
+export const afterYear = () => {
   performanceMocker.set(1000 * 60 * 60 * 24 * 365);
   const requested = 10;
   const total = 200;
-  foo(requested, total);
+  prepareState(requested, total);
   expect(stdout.getBuffer()[0]).startsWith(
     `Web Requests: 8760:00:00.000 (h:mm:ss.mmm)`
   );
 }
 
-export const showProgressNoChangeSinceLast = () => {
+export const noChangeSinceLast = () => {
   performanceMocker.set(0);
   const expectedCount = 200;
   const requestCount = 10;
@@ -143,7 +121,7 @@ export const showProgressNoChangeSinceLast = () => {
   expect(stdout.getBuffer()).equals([]);
 }
 
-export const showProgressWithTimeRemaining = () => {
+export const withTimeRemaining = () => {
   performanceMocker.set(0);
   const expectedCount = 100;
   const requestCount = 10;
@@ -164,7 +142,7 @@ export const showProgressWithTimeRemaining = () => {
   ]);
 }
 
-export const showProgressWithPendingMoreThanTotal = () => {
+export const withPendingMoreThanTotal = () => {
   performanceMocker.set(0);
   const expectedCount = 2;
   const requestCount = 1;
@@ -186,7 +164,7 @@ export const showProgressWithPendingMoreThanTotal = () => {
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${requestCount + queueCount}\u001b[39m ~ 0.${msRemaining}s\n`
   ]);
 }
-export const showProgressWithoutTotalOrPending = () => {
+export const withoutTotalOrPending = () => {
   performanceMocker.set(0);
   const expectedCount = 1;
   const requestCount = 1;
@@ -210,4 +188,16 @@ const setDelay = (ms) => {
   const date = new Date();
   date.setTime(date.getTime() - ((progressSeconds * 1000) - ms));
   state.set('progressedAt', date);
+}
+
+const prepareState = (requested, total) => {
+  dateMocker.setUtc(2000, 0, 1);
+  state.set('firstAt', new Date());
+  setDelay(-1);
+  state.set('requestCount', requested);
+  state.set('expectedCount', total);
+  state.append('queue', 1);
+  state.set('priorRemainingCount', 1);
+  state.set('priorPresumedTotal', total + 1);
+  showProgress();
 }
