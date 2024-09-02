@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "build": "tsc",
     "test": "node ./scripts/test.js",
     "sample:https": "node ./scripts/sample-https.js",
     "sample:queue:cb": "node ./scripts/sample-queue-db.js",
@@ -20,6 +21,8 @@
   "author": "Code Jamboree LLC",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^22.5.2",
+    "typescript": "^5.5.4",
     "why-is-node-running": "^3.2.0"
   }
 }
