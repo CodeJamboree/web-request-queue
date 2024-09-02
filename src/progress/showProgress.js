@@ -1,11 +1,9 @@
 import { state } from '../state.js';
 import { formatMsAsDuration } from '../utils/formatMsAsDuration.js';
-import { delayProgress } from './delayProgress.js';
 import { timeSince } from '../utils/timeSince.js';
 import { timeLogger } from './timeLogger.js';
 
 export const showProgress = () => {
-
 
   const requestCount = state.get('requestCount');
   const expectedCount = state.get('expectedCount');
@@ -32,6 +30,7 @@ export const showProgress = () => {
     stats.push('of', presumedTotal);
   }
   if (requestCount > 0 && remainingCount > 0) {
+    const firstAt = state.get('firstAt');
     const msElapsed = timeSince(firstAt);
     if (msElapsed > 0) {
       const msPerReq = msElapsed / requestCount;
