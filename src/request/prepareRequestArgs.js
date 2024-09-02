@@ -4,6 +4,8 @@ export const prepareRequestArgs = (onCancel, first, ...rest) => {
 
   const type = typeof first;
   const args = [];
+  let options;
+  let callback;
 
   if (first instanceof URL || type === 'string') {
     args.push(first);

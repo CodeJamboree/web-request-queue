@@ -45,6 +45,33 @@ export const expect = (actual, details) => {
       }
       if (!thrown)
         throw new ExpectationError(`throws`, { details, error, actual })
+    },
+    instanceOf: expected => {
+      if (typeof actual !== 'object') {
+        throw new ExpectationError('instanceOf', {
+          details,
+          expected,
+          actual: typeof actual
+        });
+      }
+      if (typeof expected === 'string') {
+        const name = actual?.constructor?.name;
+        if (name !== expected) {
+          throw new ExpectationError('instanceOf', {
+            details,
+            expected,
+            actual: name
+          });
+        }
+        return;
+      }
+      if (!(actual instanceof expected)) {
+        throw new ExpectationError('instanceOf', {
+          details,
+          expected,
+          actual
+        });
+      }
     }
   })
 }

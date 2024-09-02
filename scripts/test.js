@@ -3,6 +3,7 @@ import { state } from '../src/state.js';
 import { stopTimers } from "../src/timers/stopTimers.js";
 import { timeLogger } from '../src/progress/timeLogger.js';
 import { dateMocker } from "./utils/dateMocker.js";
+import { httpsMocker } from "./utils/httpsMocker.js";
 import { performanceMocker } from "./utils/performanceMocker.js";
 import { ExpectationError } from './utils/ExpectationError.js';
 
@@ -70,11 +71,13 @@ const beforeEach = () => {
 
   dateMocker.freeze();
   performanceMocker.freeze();
+  httpsMocker.mock();
 }
 const afterEach = () => {
   timeLogger.stop();
   dateMocker.restore();
   performanceMocker.restore();
+  httpsMocker.restore();
   stdout.showOutput();
 }
 const runTest = async ([name, test], i, a, state, depth, location) => {
