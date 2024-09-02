@@ -35,11 +35,9 @@ const delayedStart = () => {
 const startInterval = () => {
   const queueCount = state.count('queue');
   if (queueCount === 0) return;
-  if (queueCount > 1) {
-    state.set('queueIntervalId', setInterval(
-      handleQueueInterval,
-      adjustTimeout(msPerRequest())
-    ));
-  }
+  state.set('queueIntervalId', setInterval(
+    handleQueueInterval,
+    adjustTimeout(msPerRequest())
+  ));
   handleQueueInterval();
 }
