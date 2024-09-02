@@ -1,29 +1,31 @@
-const isDate = value => value instanceof Date;
-const isTimeout = value => {
-  const type = typeof value;
-  switch (type) {
-    case 'object':
-      return value?.constructor?.name === 'Timeout';
-    case 'number':
-      return true;
-    default:
-      return false;
-  }
-}
-
+const timeoutKeys = [
+  'progressIntervalId',
+  'progressTimeoutId',
+  'queueIntervalId',
+  'queueTimeoutId'
+];
+const dateKeys = [
+  'lastAt',
+  'firstAt',
+  'progressedAt'
+]
+const removableKeys = [
+  ...timeoutKeys,
+  ...dateKeys
+]
 const initialState = {
-  lastAt: isDate,
-  firstAt: isDate,
-  progressedAt: isDate,
+  lastAt: undefined,
+  firstAt: undefined,
+  progressedAt: undefined,
 
   isBlocked: false,
 
   queue: [],
 
-  progressIntervalId: isTimeout,
-  progressTimeoutId: isTimeout,
-  queueIntervalId: isTimeout,
-  queueTimeoutId: isTimeout,
+  progressIntervalId: undefined,
+  progressTimeoutId: undefined,
+  queueIntervalId: undefined,
+  queueTimeoutId: undefined,
 
   requestCount: 0,
   expectedCount: 1,
@@ -43,7 +45,6 @@ class State {
   get(key) {
     this.ensureNotArray(key);
     const value = this.state[key];
-    if (typeof value === 'function') return;
     return value;
   }
   set(key, value) {
@@ -73,20 +74,34 @@ class State {
   }
   remove(key) {
     this.ensureNotArray(key);
-    const original = initialState[key];
-    if (typeof original !== 'function') {
+    if (!removableKeys.includes(key)) {
       throw new Error(`Unable to remove ${key}`);
     }
-    this.state[key] = initialState[key];
+
+    if (timeoutKeys.includes(key)) {
+      const value = this.state[key];
+      if (!value._destroyed) {
+        throw new Error(`Unable to remove ${key}. Timeout not yet destroyed.`);
+      }
+    }
+
+    this.state[key] = undefined;
   }
   reset() {
-    // clear timeout/interval first?
-    this.state = { ...initialState };
-    const keys = Object.keys(this.state);
+    timeoutKeys.forEach((key) => {
+      const value = this.state[key];
+      if (value === undefined) return;
+      if (!value._destroyed) {
+        throw new Error(`Unable to remove ${key}. Timeout not yet destroyed.`);
+      }
+    });
+    const keys = Object.keys(initialState);
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      if (Array.isArray(this.state[key])) {
-        this.state[key] = this.state[key].slice();
+      if (Array.isArray(initialState[key])) {
+        this.state[key] = [];
+      } else {
+        this.state[key] = initialState[key];
       }
     };
   }
@@ -96,9 +111,17 @@ class State {
     const originalKeyValue = initialState[key];
     const keyType = typeof originalKeyValue;
     if (valueType !== keyType) {
-      if (valueType === 'object' && keyType === 'function') {
-        if (!originalKeyValue(value)) {
-          throw new Error(`Unable to set ${key} as ${value?.constructor?.name ?? valueType}. Expected ${originalKeyValue.name}.`);
+      if (valueType === 'object' && removableKeys.includes(key)) {
+        if (timeoutKeys.includes(key)) {
+          if (value?.constructor?.name !== 'Timeout') {
+            throw new Error(`Unable to set ${key} as ${value?.constructor?.name ?? valueType}. Expected Timeout.`);
+          }
+          if (this.state[key] !== undefined) {
+            throw new Error('Attempted to replace existing Timeout');
+          }
+        }
+        if (dateKeys.includes(key) && !(value instanceof Date)) {
+          throw new Error(`Unable to set ${key} as ${value?.constructor?.name ?? valueType}. Expected Date.`);
         }
       } else {
         throw new Error(`Unable to set ${key} as ${valueType}. Expected ${keyType}.`);
@@ -107,12 +130,6 @@ class State {
 
     if (Array.isArray(originalKeyValue)) {
       throw new `Unable to set ${key} directly. Use append, prepend, removeAll, removeFirst`;
-    }
-  }
-  ensureNumeric(key) {
-    this.ensureKeyExists(key);
-    if (typeof this.state[key] !== 'number') {
-      throw new Error(`${key} is not a number`);
     }
   }
   ensureKeyExists(key) {

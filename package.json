@@ -16,5 +16,8 @@
     "queue"
   ],
   "author": "Code Jamboree LLC",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "why-is-node-running": "^3.2.0"
+  }
 }
