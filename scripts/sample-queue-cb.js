@@ -1,5 +1,4 @@
 import { webRequest } from '../src/index.js';
-import whyIsNodeRunning from 'why-is-node-running';
 
 const callback = (res) => {
   let total = 0;
@@ -14,29 +13,26 @@ const callback = (res) => {
 }
 const onRequested = req => {
   req.on('error', e => {
-    console.error('onRequested.error');
+    console.error('req.error');
     console.log(e);
   });
   req.end();
 }
 
-const url = new URL('https://github.com/CodeJamboree/')
+const url = new URL('https://github.com/CodeJamboree/');
+
 const options = {
   hostname: url.hostname,
   path: url.pathname,
   method: 'GET'
 }
+
 webRequest.queue({
   args: [options, callback],
   onRequested,
   onCancel: (err) => {
-    console.error('onCancel', err);
+    console.error('canceled', err);
   }
 });
 
-console.log('done');
-
-// setTimeout(() => {
-//   console.log(process._getActiveHandles().map(m => m?._type));
-//   console.log(process._getActiveRequests());
-// }, 5000);
+console.log('done'); // called before request is made

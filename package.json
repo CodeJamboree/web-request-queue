@@ -7,7 +7,9 @@
   "scripts": {
     "test": "node ./scripts/test.js",
     "sample:https": "node ./scripts/sample-https.js",
-    "sample:queue": "node ./scripts/sample-queue.js"
+    "sample:queue:cb": "node ./scripts/sample-queue-db.js",
+    "sample:queue:promise": "node ./scripts/sample-queue-promise.js",
+    "sample:queue:many": "node ./scripts/sample-queue-many.js"
   },
   "keywords": [
     "throttle",

@@ -1,31 +1,42 @@
 # web-request-queue
 
-Simple utility to throttle web requests to reduce heavy traffic on your website.
+Simple utility to throttle web requests to reduce heavy traffic on your website. 
+
+# Queing
+
+You can call queue with the same arguments as https.request. However, it returns a promise that eventually resolves into a request, rather than the request itself.
 
 ```js
 import { webRequest } from '@codejamboree/web-request-queue';
 
-// Same args be be sent to https.request (url, options, callback) or (options, callback)
-
 const options = { method: 'GET' };
 
-const callback = res =>{
+const callback = res => {
   let buffer = new Buffer.alloc(0);
   res.on('data', data => {
     buffer = Buffer.concat([buffer, data]);
+  });
+  res.on('error', err => {
+    console.error(err);
   });
   res.on('end', () => {
     console.log(buffer.toString());
   });
 };
 
-for(let i = 0; i < 10; i++) {
-  webRequest.queue(`https://localhost/api?id=${i}`, options, callback);
-}
+// same args as https.request
+webRequest.queue(`https://localhost/api?id=${i}`, options, callback)
+  .then(req => {
+    req.on('error', err => console.error(err));
+    req.end();
+  })
+  .catch(err => {
+    console.error(err);
+  });
 ```
-# Post Data
+# Callbacks
 
-To post form data, you'll need access to the client request, which is retrieved with a callback.
+If you prefer not to work with promises, you can also wrap the arguments and add a callback to process the request once it is retrieved.
 
 ```js
 const onRequested = req => {
@@ -59,7 +70,7 @@ If a request in the queue is discarded, the onCancel event will be invoked.
 ```js
 const onCancel = err => {
   console.error(err);
-  // I am canceling all requests
+  // Output: I am canceling all requests
 }
 webRequest.queue({
   args: [url, options, callback],
@@ -80,9 +91,9 @@ You may set the number of requests allowed within a given period.
 webRequest.setThrottleMax(10);
 webRequest.setThrottlePeriod(60);
 ```
-## Progress Delay
+## Progress
 
-You can set how often the progress log will display statistics. An estimate of time remaining will be calculated and displayed as well based on the average request rate and remaining/queued requests.
+You can set display a progress report when you have a large number of reqeusts in the queue. It will attempt to estimate the time remaining based on the number of requests in the queue, or the total number of expected requests that you had set. By default, progress reports are disabled.
 
 ```js
 // log progress output every 15 seconds
@@ -90,6 +101,9 @@ webRequest.setProgressDelay(15);
 // Web Requests: 15.015s 2 of 2000 ~ 20h:03m
 // Web Requests: 30.403s 5 of 2000 ~ 20h:03m
 // Web Requests: 45.075s 7 of 2000 ~ 20h:02m
+
+// disable progress output
+webRequest.setProgressDelay(Infinity);
 ```
 
 ## Total Requests
