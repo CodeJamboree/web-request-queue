@@ -1,21 +1,6 @@
 import { state } from './state.js';
 import { startTimers } from './timers/startTimers.js';
 
-const parseParams = (args) => {
-  const [first] = args[0];
-  switch (typeof first) {
-    case 'string':
-      return { args };
-    case 'object':
-      if (first instanceof URL) return { args };
-      if (!('args' in first)) {
-        throw new Error(`Missing args key`);
-      }
-      return first;
-    default:
-      throw new Error(`Unexpected arguments. Need args for https.request, or object as first arg`);
-  }
-}
 export const queue = (...args) => {
   if (state.get('isBlocked')) {
     throw new Error(`Not allowing new requests.`);
@@ -30,4 +15,20 @@ export const queue = (...args) => {
 
   state.add('queue', { args, onRequested, onCancel });
   startTimers();
+}
+
+const parseParams = (args) => {
+  const [first] = args[0];
+  switch (typeof first) {
+    case 'string':
+      return { args };
+    case 'object':
+      if (first instanceof URL) return { args };
+      if (!('args' in first)) {
+        throw new Error(`Missing args key`);
+      }
+      return first;
+    default:
+      throw new Error(`Unexpected arguments. Need args for https.request, or object as first arg`);
+  }
 }

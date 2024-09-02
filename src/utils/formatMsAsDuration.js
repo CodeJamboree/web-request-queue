@@ -1,10 +1,13 @@
 
-import { msMap } from "./msMap.js";
+import { msMap, microsecondKey } from "./msMap.js";
 
-const units = ['y', 'mo', 'd', 'h', 'mi', 's', 'ms', '\u00B5s', 'ns', 'ps', 'fs', 'as', 'zs'];//, 'ys', 'rs', 'qs', 'p'];
+const units = [
+  'y', 'mo', 'd', 'h', 'mi', 's', 'ms',
+  microsecondKey, 'ns', 'ps', 'fs', 'as', 'zs'
+];
 const msIndex = units.indexOf('ms');
+const yearIndex = units.indexOf('y');
 const maxUnits = 3;
-const delimiter = ':';
 
 export const formatMsAsDuration = ms => {
   if (ms === undefined || ms === null) return;
@@ -24,40 +27,17 @@ export const formatMsAsDuration = ms => {
     signed = true;
     ms *= -1;
   }
-  const parsed = units.reduce(reducer, { ms, parts: [], count: 0 });
+  const parsed = units.reduce(parseParts, { ms, parts: [], count: 0 });
+
   if (parsed.parts.length === 0) {
     return signed ? '-0s' : '0s';
   }
-  let text = parsed.parts.reduce((duration, { text, unit, index }, i, a) => {
-    let prefix = '';
-    if (i === 0) {
-      if (unit === 'ms') {
-        prefix = '0.';
-      }
-    } else {
-      if (unit === 'ms') {
-        prefix = '.'
-      } else {
-        prefix = ':';
-      }
-    }
 
-    if (unit === 's' && i !== a.length - 1) {
-      return `${duration}${prefix}${text}`;
-    }
-    if (unit === 'ms') {
-      return `${duration}${prefix}${text}s`;
-    }
-    if (index > msIndex) {
-      return `${duration}${prefix}${text}${unit}`
-    } else {
-      return `${duration}${prefix}${text}${unit.charAt(0)}`
-    }
-  }, '');
+  let text = parsed.parts.reduce(joinParts, '');
   return (signed ? '-' : '') + text;
 }
 
-const reducer = (state, unit, index) => {
+const parseParts = (state, unit, index) => {
   if (state.parts.length >= maxUnits) return state;
 
   let unitMs = msMap[unit];
@@ -74,18 +54,41 @@ const reducer = (state, unit, index) => {
 
   }
 
-  // if prefixed with delimiter
-  // make sure to pad with two digits
   let pad = first ? 1 : (index >= msIndex ? 3 : 2);
   if (index === msIndex) pad = 3;
 
-  let stringNum = units.toString();
-
   state.parts.push({
-    text: stringNum.padStart(pad, '0'),
+    text: units.toLocaleString().padStart(pad, '0'),
     unit,
     index
   });
 
   return state;
+}
+
+const joinParts = (duration, { text, unit, index }, i, a) => {
+  let prefix = '';
+  if (i === 0) {
+    if (unit === 'ms') {
+      prefix = '0.';
+    }
+  } else {
+    if (unit === 'ms') {
+      prefix = '.'
+    } else {
+      prefix = ':';
+    }
+  }
+
+  if (unit === 's' && i !== a.length - 1) {
+    return `${duration}${prefix}${text}`;
+  }
+  if (unit === 'ms') {
+    return `${duration}${prefix}${text}s`;
+  }
+  if (index < yearIndex || index > msIndex) {
+    return `${duration}${prefix}${text}${unit}`
+  } else {
+    return `${duration}${prefix}${text}${unit.charAt(0)}`
+  }
 }
