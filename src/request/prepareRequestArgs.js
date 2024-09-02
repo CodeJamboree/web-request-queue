@@ -4,19 +4,18 @@ export const prepareRequestArgs = (onCancel, first, ...rest) => {
 
   const type = typeof first;
   const args = [];
-  let options;
   let callback;
 
   if (first instanceof URL || type === 'string') {
     args.push(first);
-    [options, callback] = rest;
+    if (rest.length >= 1) args.push(rest[0]);
+    callback = rest[1];
   } else {
-    options = first;
-    [callback] = rest;
+    if (first || rest.length >= 1) args.push(first);
+    callback = rest[0];
   }
 
   args.push(
-    options,
     handleResponse(callback, onCancel)
   );
 

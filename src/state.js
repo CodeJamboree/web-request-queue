@@ -80,6 +80,7 @@ class State {
     this.state[key] = initialState[key];
   }
   reset() {
+    // clear timeout/interval first?
     this.state = { ...initialState };
     const keys = Object.keys(this.state);
     for (let i = 0; i < keys.length; i++) {

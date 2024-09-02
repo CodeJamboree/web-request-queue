@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "node ./scripts/test.js"
+    "test": "node ./scripts/test.js",
+    "sample:https": "node ./scripts/sample-https.js",
+    "sample:queue": "node ./scripts/sample-queue.js"
   },
   "keywords": [
     "throttle",

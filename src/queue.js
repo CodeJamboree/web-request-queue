@@ -6,19 +6,16 @@ export const queue = (...args) => {
     throw new Error(`Not allowing new requests.`);
   }
 
-  const { args, onRequested, onCancel } = parseParams(args);
+  const params = parseParams(args);
 
-  if (!Array.isArray(args) || args.length <= 0) {
-    const unexpected = Array.isArray(args) ? typeof args : args.length;
-    throw new Error(`Expected one or more requestArguments. Got ${unexpected}.`);
-  }
+  checkArgs(params.args);
 
-  state.add('queue', { args, onRequested, onCancel });
+  state.append('queue', params);
   startTimers();
 }
 
 const parseParams = (args) => {
-  const [first] = args[0];
+  const [first] = args;
   switch (typeof first) {
     case 'string':
       return { args };
@@ -31,4 +28,11 @@ const parseParams = (args) => {
     default:
       throw new Error(`Unexpected arguments. Need args for https.request, or object as first arg`);
   }
+}
+
+const checkArgs = args => {
+  if (Array.isArray(args)) return;
+  if (args.length > 0) return;
+  const unexpected = Array.isArray(args) ? typeof args : args.length;
+  throw new Error(`Expected one or more requestArguments. Got ${unexpected}.`);
 }
