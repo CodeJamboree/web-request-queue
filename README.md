@@ -93,17 +93,17 @@ webRequest.setSecondsPerPeriod(60);
 ```
 ## Progress
 
-You can set display a progress report when you have a large number of reqeusts in the queue. It will attempt to estimate the time remaining based on the number of requests in the queue, or the total number of expected requests that you had set. By default, progress reports are disabled.
+You can set display the progress. It will attempt to estimate the time remaining based on the number of requests in the queue, or the total number of expected requests that you had set. By default, evaluation is disabled.
 
 ```js
-// log progress output every 15 seconds
-webRequest.setProgressDelay(15);
+// evaluate progress every 15 seconds
+webRequest.setEvaluationSeconds(15);
 // Web Requests: 15.015s 2 of 2000 ~ 20h:03m
 // Web Requests: 30.403s 5 of 2000 ~ 20h:03m
 // Web Requests: 45.075s 7 of 2000 ~ 20h:02m
 
 // disable progress output
-webRequest.setProgressDelay(Infinity);
+webRequest.setEvaluationSeconds(Infinity);
 ```
 
 ## Total Requests
