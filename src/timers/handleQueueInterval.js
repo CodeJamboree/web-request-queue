@@ -2,10 +2,9 @@ import { state } from '../state.js';
 import { stopTimers } from './stopTimers.js';
 import { makeRequest } from '../request/makeRequest.js';
 
-export const onNextRequest = () => {
+export const handleQueueInterval = () => {
   if (state.get('isBlocked')) {
     stopTimers();
-    throw new Error(`Not allowing new requests.`);
   }
   const params = state.removeFirst('queue');
   if (params) {

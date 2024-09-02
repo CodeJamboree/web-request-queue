@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { onNextRequest } from './onNextRequest.js';
+import { handleQueueInterval } from './handleQueueInterval.js';
 import { msPerRequest } from '../request/msPerRequest.js';
 import { delayRequest } from '../request/delayRequest.js';
 import { adjustTimeout } from './adjustTimeout.js';
@@ -24,16 +24,22 @@ export const startQueueTimer = () => {
 }
 
 const delayedStart = () => {
-  clearTimeout(state.get('queueTimeoutId'));
-  state.remove('queueTimeoutId');
+  const queueTimeoutId = state.get('queueTimeoutId');
+  if (queueTimeoutId) {
+    clearTimeout(queueTimeoutId);
+    state.remove('queueTimeoutId');
+  }
   startInterval();
 }
 
 const startInterval = () => {
-  if (state.count('queue') === 0) return;
-  state.set('queueIntervalId', setInterval(
-    onNextRequest,
-    adjustTimeout(msPerRequest())
-  ));
-  onNextRequest();
+  const queueCount = state.count('queue');
+  if (queueCount === 0) return;
+  if (queueCount > 1) {
+    state.set('queueIntervalId', setInterval(
+      handleQueueInterval,
+      adjustTimeout(msPerRequest())
+    ));
+  }
+  handleQueueInterval();
 }
