@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { startQueueTimer } from './timers/startQueueTimer.js';
 import { stopQueueTimer } from './timers/stopQueueTimer.js';
 
-export const setThrottlePeriod = seconds => {
+export const setSecondsPerPeriod = seconds => {
   if (isNaN(seconds) || typeof seconds !== 'number' || !isFinite(seconds) || seconds < 1) {
     throw new Error(`Seconds per throttle period must be 1 or more. Got ${seconds}.`);
   }

@@ -89,7 +89,7 @@ You may set the number of requests allowed within a given period.
 ```js
 // Limit to 10 requests per minute
 webRequest.setThrottleMax(10);
-webRequest.setThrottlePeriod(60);
+webRequest.setSecondsPerPeriod(60);
 ```
 ## Progress
 

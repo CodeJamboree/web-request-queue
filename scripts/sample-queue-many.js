@@ -5,7 +5,7 @@ webRequest.setProgressDelay(1);
 
 // Make only 1 request every 2 seconds
 webRequest.setThrottleMax(1);
-webRequest.setThrottlePeriod(2);
+webRequest.setSecondsPerPeriod(2);
 
 const handleRequest = async req => new Promise((resolve, reject) => {
   let buffer;

@@ -1,32 +1,32 @@
 import { expect } from '../scripts/utils/expect.js';
 import { state } from './state.js';
-import { setThrottlePeriod } from './setThrottlePeriod.js';
+import { setSecondsPerPeriod } from './setSecondsPerPeriod.js';
 
 const stateKey = 'throttleSeconds';
 
-export const setThrottlePeriod1 = () => {
-  setThrottlePeriod(1);
+export const oneMs = () => {
+  setSecondsPerPeriod(1);
   expect(state.get(stateKey)).is(1);
 }
-export const setThrottlePeriod0 = () => {
+export const zero = () => {
   const count = state.get(stateKey);
   expect(() => {
-    setThrottlePeriod(0);
+    setSecondsPerPeriod(0);
   }).toThrow("Seconds per throttle period must be 1 or more. Got 0.");
   expect(state.get(stateKey)).is(count);
 }
-export const setThrottlePeriodInfinity = () => {
+export const infinity = () => {
   const count = state.get(stateKey);
   expect(() => {
-    setThrottlePeriod(Infinity);
+    setSecondsPerPeriod(Infinity);
   }).toThrow("Seconds per throttle period must be 1 or more. Got Infinity.");
   expect(state.get(stateKey)).is(count);
 }
 
-export const setThrottlePeriodTrue = () => {
+export const booleanTrue = () => {
   const count = state.get(stateKey);
   expect(() => {
-    setThrottlePeriod(true);
+    setSecondsPerPeriod(true);
   }).toThrow("Seconds per throttle period must be 1 or more. Got true.");
   expect(state.get(stateKey)).is(count);
 }
