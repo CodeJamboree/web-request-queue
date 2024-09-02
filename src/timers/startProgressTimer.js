@@ -17,7 +17,10 @@ export const startProgressTimer = () => {
     return;
   }
 
-  state.get('progressTimeoutId') = setTimeout(delayedStart, adjustTimeout(delayMs));
+  state.get('progressTimeoutId') = setTimeout(
+    delayedStart,
+    adjustTimeout(delayMs)
+  );
 }
 
 const delayedStart = () => {
@@ -28,7 +31,9 @@ const delayedStart = () => {
 
 const startInterval = () => {
   if (state.count('queue') === 0) return;
-  const ms = msPerProgress();
-  state.progressIntervalId = setInterval(showProgress, adjustTimeout(ms));
+  state.progressIntervalId = setInterval(
+    showProgress,
+    adjustTimeout(msPerProgress())
+  );
   showProgress();
 }

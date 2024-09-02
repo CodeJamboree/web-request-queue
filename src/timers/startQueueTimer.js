@@ -2,9 +2,7 @@ import { state } from '../state.js';
 import { onNextRequest } from './onNextRequest.js';
 import { msPerRequest } from '../request/msPerRequest.js';
 import { delayRequest } from '../request/delayRequest.js';
-
-const padMs = 4;
-const minMs = 4;
+import { adjustTimeout } from './adjustTimeout.js';
 
 export const startQueueTimer = () => {
   if (
@@ -19,8 +17,10 @@ export const startQueueTimer = () => {
     return;
   }
 
-  const ms = Math.max(minMs, delayMs + padMs);
-  state.set('queueTimeoutId', setTimeout(delayedStart, ms));
+  state.set('queueTimeoutId', setTimeout(
+    delayedStart,
+    adjustTimeout(delayMs)
+  ));
 }
 
 const delayedStart = () => {
@@ -31,7 +31,9 @@ const delayedStart = () => {
 
 const startInterval = () => {
   if (state.count('queue') === 0) return;
-  const ms = msPerRequest() + padMs;
-  state.set('queueIntervalId', setInterval(onNextRequest, Math.max(minMs, ms)));
+  state.set('queueIntervalId', setInterval(
+    onNextRequest,
+    adjustTimeout(msPerRequest())
+  ));
   onNextRequest();
 }
