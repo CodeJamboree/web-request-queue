@@ -1,6 +1,6 @@
-import { handleResponseEnd } from "./handleResponseEnd";
-import { handleResponseError } from "./handleResponseError";
-import { cancelHandler, responseHandler } from "../types";
+import { handleResponseEnd } from "./handleResponseEnd.js";
+import { handleResponseError } from "./handleResponseError.js";
+import { cancelHandler, responseHandler } from "../types.js";
 
 export const handleResponse = (
   callback: responseHandler | undefined,

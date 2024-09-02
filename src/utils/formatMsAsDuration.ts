@@ -1,5 +1,5 @@
 
-import { msMap, microsecondKey, unitType } from "./msMap";
+import { msMap, microsecondKey, unitType } from "./msMap.js";
 
 
 const units: unitType[] = [

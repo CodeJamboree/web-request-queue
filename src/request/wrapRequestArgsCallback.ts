@@ -1,5 +1,5 @@
-import { handleResponse } from './handleResponse';
-import { cancelHandler, requestArgs, RequestOptions } from '../types';
+import { handleResponse } from './handleResponse.js';
+import { cancelHandler, requestArgs, RequestOptions } from '../types.js';
 
 export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, requestArgs: requestArgs): requestArgs => {
 

@@ -1,4 +1,4 @@
-import { msMap, unitType } from "./msMap";
+import { msMap, unitType } from "./msMap.js";
 
 export const timeSince = (date: Date, unit: unitType = 'ms') => {
   const ms = new Date().getTime() - date.getTime();

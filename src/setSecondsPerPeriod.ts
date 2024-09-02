@@ -1,6 +1,6 @@
-import { state } from './state';
-import { startQueueTimer } from './timers/startQueueTimer';
-import { stopQueueTimer } from './timers/stopQueueTimer';
+import { state } from './state.js';
+import { startQueueTimer } from './timers/startQueueTimer.js';
+import { stopQueueTimer } from './timers/stopQueueTimer.js';
 
 export const setSecondsPerPeriod = (seconds: number) => {
   if (isNaN(seconds) || typeof seconds !== 'number' || !isFinite(seconds) || seconds < 1) {

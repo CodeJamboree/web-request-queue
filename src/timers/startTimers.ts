@@ -1,5 +1,5 @@
-import { startQueueTimer } from './startQueueTimer';
-import { startProgressTimer } from './startProgressTimer';
+import { startQueueTimer } from './startQueueTimer.js';
+import { startProgressTimer } from './startProgressTimer.js';
 
 export const startTimers = () => {
   startProgressTimer();

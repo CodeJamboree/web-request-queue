@@ -1,4 +1,4 @@
-import { queueParams } from "./types";
+import { queueParams } from "./types.js";
 
 type dateKeys = 'lastAt' |
   'firstAt' |

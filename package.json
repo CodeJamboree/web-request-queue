@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "node ./scripts/test.js",
-    "sample:https": "node ./scripts/sample-https.js",
-    "sample:queue:cb": "node ./scripts/sample-queue-db.js",
-    "sample:queue:promise": "node ./scripts/sample-queue-promise.js",
-    "sample:queue:many": "node ./scripts/sample-queue-many.js"
+    "test": "npm run build && node ./scripts/test.js",
+    "sample:https": "npm run build && node ./scripts/sample-https.js",
+    "sample:queue:cb": "npm run build && node ./scripts/sample-queue-db.js",
+    "sample:queue:promise": "npm run build && node ./scripts/sample-queue-promise.js",
+    "sample:queue:many": "npm run build && node ./scripts/sample-queue-many.js"
   },
   "keywords": [
     "throttle",

@@ -1,7 +1,7 @@
 import * as stdout from "./utils/stdout.js";
-import { state } from '../src/state.js';
-import { stopTimers } from "../src/timers/stopTimers.js";
-import { timeLogger } from '../src/progress/timeLogger.js';
+import { state } from '../build/state.js';
+import { stopTimers } from "../build/timers/stopTimers.js";
+import { timeLogger } from '../build/progress/timeLogger.js';
 import { dateMocker } from "./utils/dateMocker.js";
 import { httpsMocker } from "./utils/httpsMocker.js";
 import { performanceMocker } from "./utils/performanceMocker.js";
@@ -11,7 +11,7 @@ import { getModules } from './utils/getModules.js';
 const excess = 10;
 
 const main = async () => {
-  const suites = await getModules('src', /\.test\.js$/, '');
+  const suites = await getModules('build', /\.test\.js$/, '');
   const state = {
     passed: 0,
     failed: 0,

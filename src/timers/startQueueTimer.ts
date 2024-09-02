@@ -1,8 +1,8 @@
-import { state } from '../state';
-import { handleQueueInterval } from './handleQueueInterval';
-import { msPerRequest } from '../request/msPerRequest';
-import { delayRequest } from '../request/delayRequest';
-import { adjustTimeout } from './adjustTimeout';
+import { state } from '../state.js';
+import { handleQueueInterval } from './handleQueueInterval.js';
+import { msPerRequest } from '../request/msPerRequest.js';
+import { delayRequest } from '../request/delayRequest.js';
+import { adjustTimeout } from './adjustTimeout.js';
 
 export const startQueueTimer = () => {
   if (

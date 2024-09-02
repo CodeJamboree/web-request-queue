@@ -1,6 +1,6 @@
 import { queueArgs, promisedQueue, requestArgs, ClientRequest, requestHandler, cancelHandler, queueParams } from './types';
-import { state } from './state';
-import { startTimers } from './timers/startTimers';
+import { state } from './state.js';
+import { startTimers } from './timers/startTimers.js';
 
 export const queue = (...args: queueArgs) => {
   if (state.flagged('isBlocked')) {

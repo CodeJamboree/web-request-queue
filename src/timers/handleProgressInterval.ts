@@ -1,7 +1,7 @@
-import { showProgress } from "../progress/showProgress";
-import { stopProgressTimer } from "./stopProgressTimer";
-import { delayProgress } from '../progress/delayProgress';
-import { state } from '../state';
+import { showProgress } from "../progress/showProgress.js";
+import { stopProgressTimer } from "./stopProgressTimer.js";
+import { delayProgress } from '../progress/delayProgress.js';
+import { state } from '../state.js';
 
 export const handleProgressInterval = () => {
   if (state.getNum('progressSeconds') === Infinity) {

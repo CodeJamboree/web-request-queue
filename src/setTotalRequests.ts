@@ -1,5 +1,5 @@
-import { state } from './state';
-import { timeLogger } from './progress/timeLogger';
+import { state } from './state.js';
+import { timeLogger } from './progress/timeLogger.js';
 
 export const setTotalRequests = (value = 1) => {
   if (value < 1 || isNaN(value) || !isFinite(value) || typeof value !== 'number') {

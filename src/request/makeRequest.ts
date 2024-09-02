@@ -1,9 +1,9 @@
 import https from 'https';
-import { delayRequest } from './delayRequest';
-import { beforeRequest } from './beforeRequest';
-import { wrapRequestArgsCallback } from './wrapRequestArgsCallback';
-import { handleRequestError } from './handleRequestError';
-import { queueParams, RequestOptions } from '../types';
+import { delayRequest } from './delayRequest.js';
+import { beforeRequest } from './beforeRequest.js';
+import { wrapRequestArgsCallback } from './wrapRequestArgsCallback.js';
+import { handleRequestError } from './handleRequestError.js';
+import { queueParams, RequestOptions } from '../types.js';
 
 
 export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {

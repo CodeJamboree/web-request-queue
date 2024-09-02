@@ -1,14 +1,14 @@
-import { state } from '../state';
+import { state } from '../state.js';
 
 export const stopQueueTimer = () => {
-  const queueTimeoutId = state.get('queueTimeoutId');
+  const queueTimeoutId = state.getTimeout('queueTimeoutId');
   if (queueTimeoutId) {
     clearTimeout(queueTimeoutId);
     state.removeTimeout('queueTimeoutId');
   }
-  const queueIntervalId = state.get('queueIntervalId');
+  const queueIntervalId = state.getTimeout('queueIntervalId');
   if (queueIntervalId) {
     clearInterval(queueIntervalId);
-    state.remove('queueIntervalId');
+    state.removeTimeout('queueIntervalId');
   }
 }

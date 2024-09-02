@@ -1,5 +1,5 @@
-import { cancelQueuedRequests } from './cancelQueuedRequests';
-import { cancelHandler, IncomingMessage } from '../types';
+import { cancelQueuedRequests } from './cancelQueuedRequests.js';
+import { cancelHandler, IncomingMessage } from '../types.js';
 
 export const handleResponseError = (_response: IncomingMessage, onCancel: cancelHandler | undefined) => (error?: any) => {
   try {

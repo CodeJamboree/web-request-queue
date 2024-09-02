@@ -1,7 +1,7 @@
-import { state } from '../state';
-import { formatMsAsDuration } from '../utils/formatMsAsDuration';
-import { timeSince } from '../utils/timeSince';
-import { timeLogger } from './timeLogger';
+import { state } from '../state.js';
+import { formatMsAsDuration } from '../utils/formatMsAsDuration.js';
+import { timeSince } from '../utils/timeSince.js';
+import { timeLogger } from './timeLogger.js';
 
 export const showProgress = () => {
 

@@ -1,5 +1,5 @@
-import { stopQueueTimer } from './stopQueueTimer';
-import { stopProgressTimer } from './stopProgressTimer';
+import { stopQueueTimer } from './stopQueueTimer.js';
+import { stopProgressTimer } from './stopProgressTimer.js';
 
 export const stopTimers = () => {
   stopQueueTimer();

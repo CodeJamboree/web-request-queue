@@ -1,5 +1,5 @@
-import { state } from '../state';
-import { timeLogger } from '../progress/timeLogger';
+import { state } from '../state.js';
+import { timeLogger } from '../progress/timeLogger.js';
 
 export const beforeRequest = () => {
   state.setNow('lastAt');

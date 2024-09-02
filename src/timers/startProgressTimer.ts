@@ -1,8 +1,8 @@
-import { state } from '../state';
-import { handleProgressInterval } from './handleProgressInterval';
-import { delayProgress } from '../progress/delayProgress';
-import { msPerProgress } from '../progress/msPerProgress';
-import { adjustTimeout } from './adjustTimeout';
+import { state } from '../state.js';
+import { handleProgressInterval } from './handleProgressInterval.js';
+import { delayProgress } from '../progress/delayProgress.js';
+import { msPerProgress } from '../progress/msPerProgress.js';
+import { adjustTimeout } from './adjustTimeout.js';
 
 export const startProgressTimer = () => {
   if (state.getNum('progressSeconds') === Infinity) return;

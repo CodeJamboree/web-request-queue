@@ -1,5 +1,5 @@
-import { cancelQueuedRequests } from './cancelQueuedRequests';
-import { cancelHandler, ClientRequest } from '../types';
+import { cancelQueuedRequests } from './cancelQueuedRequests.js';
+import { cancelHandler, ClientRequest } from '../types.js';
 
 export const handleRequestError = (_request: ClientRequest, onCancel: cancelHandler | undefined) => (error: Error) => {
   try {

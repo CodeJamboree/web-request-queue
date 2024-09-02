@@ -1,6 +1,6 @@
-import { state } from '../state';
-import { stopTimers } from '../timers/stopTimers';
-import { queueParams } from '../types';
+import { state } from '../state.js';
+import { stopTimers } from '../timers/stopTimers.js';
+import { queueParams } from '../types.js';
 
 export const cancelQueuedRequests = (reason: any = `All queued requests canceled.`) => {
   state.flag('isBlocked');

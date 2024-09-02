@@ -1,6 +1,6 @@
-import { state } from './state';
-import { startQueueTimer } from './timers/startQueueTimer';
-import { stopQueueTimer } from './timers/stopQueueTimer';
+import { state } from './state.js';
+import { startQueueTimer } from './timers/startQueueTimer.js';
+import { stopQueueTimer } from './timers/stopQueueTimer.js';
 
 export const setRequestsPerPeriod = (max: number) => {
   if (isNaN(max) || typeof max !== 'number' || !isFinite(max) || max < 1) {

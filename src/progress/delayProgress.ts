@@ -1,6 +1,6 @@
-import { state } from '../state';
-import { timeSince } from '../utils/timeSince';
-import { msPerProgress } from './msPerProgress';
+import { state } from '../state.js';
+import { timeSince } from '../utils/timeSince.js';
+import { msPerProgress } from './msPerProgress.js';
 
 export const delayProgress = () => {
   const progressedAt = state.getDate('progressedAt');

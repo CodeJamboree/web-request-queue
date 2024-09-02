@@ -1,6 +1,6 @@
-import { state } from '../state';
-import { stopTimers } from './stopTimers';
-import { makeRequest } from '../request/makeRequest';
+import { state } from '../state.js';
+import { stopTimers } from './stopTimers.js';
+import { makeRequest } from '../request/makeRequest.js';
 
 export const handleQueueInterval = () => {
   if (state.flagged('isBlocked')) {
