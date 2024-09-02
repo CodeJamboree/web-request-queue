@@ -34,7 +34,6 @@ webRequest.queue({
   }
 });
 
-console.timeEnd('Web Requests');
 console.log('done');
 
 // setTimeout(() => {
