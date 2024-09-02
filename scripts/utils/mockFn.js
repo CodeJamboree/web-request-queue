@@ -13,6 +13,7 @@ export const mockFn = (fn) => {
   callback.wasCalled = () => calls.length !== 0;
   callback.callCount = () => calls.length;
   callback.lastArgs = () => calls.length === 0 ? void 0 : calls[calls.length - 1];
+  callback.callAt = (i) => calls[i];
   callback.returns = value => returnValue = value;
 
   return callback;
