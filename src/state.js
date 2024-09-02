@@ -50,7 +50,6 @@ class State {
   set(key, value) {
     this.ensureNotArray(key);
     this.ensureType(key, value);
-    if (timeoutKeys.includes(key)) console.log('set', key, `${value}`);
     this.state[key] = value;
   }
   count(key) {
@@ -84,7 +83,6 @@ class State {
       if (!value._destroyed) {
         throw new Error(`Unable to remove ${key}. Timeout not yet destroyed.`);
       }
-      console.log('remove', key);
     }
     this.state[key] = undefined;
   }
