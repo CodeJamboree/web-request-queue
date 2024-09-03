@@ -33,12 +33,12 @@ const handleRequest = async (req: ClientRequest) => new Promise<Buffer>((resolve
 });
 
 
-const all = [];
+const all: Promise<Buffer>[] = [];
 for (let i = 0; i < 3; i++) {
   const queued = webRequest
     .queue(`https://github.com/CodeJamboree/?${i}`)
     ?.then(handleRequest);
-  all.push(queued);
+  if (queued) all.push(queued);
 }
 
 Promise.all(all)
