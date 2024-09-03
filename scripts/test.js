@@ -1,4 +1,4 @@
-import * as stdout from "./utils/stdout.js";
+import * as stdout from "../build/scripts/utils/stdout.js";
 import { state } from '../build/src/state.js';
 import { stopTimers } from "../build/src/timers/stopTimers.js";
 import { timeLogger } from '../build/src/progress/timeLogger.js';

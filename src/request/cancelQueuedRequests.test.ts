@@ -4,6 +4,8 @@ import { cancelQueuedRequests } from './cancelQueuedRequests.js';
 import { mockFn } from '../../scripts/utils/mockFn.js';
 import { stdout } from '../../scripts/utils/stdout.js';
 
+const url = new URL("https://localhost");
+
 export const mainFlow = async () => {
 
   const timeoutDelay = 100;
@@ -11,37 +13,37 @@ export const mainFlow = async () => {
   const mockCancel1 = mockFn();
   const mockCancel2 = mockFn();
 
-  state.set('isBlocked', false);
-  state.set('queueTimeoutId', setTimeout(() => {
+  state.flag('isBlocked', false);
+  state.setTimeout('queueTimeoutId', setTimeout(() => {
     console.log('queueTimeoutId - called')
   }, timeoutDelay));
-  state.set('queueIntervalId', setInterval(() => {
+  state.setTimeout('queueIntervalId', setInterval(() => {
     console.log('queueIntervalId - called')
   }, timeoutDelay));
-  state.set('progressTimeoutId', setTimeout(() => {
+  state.setTimeout('progressTimeoutId', setTimeout(() => {
     console.log('progressTimeoutId - called')
   }, timeoutDelay));
-  state.set('progressIntervalId', setInterval(() => {
+  state.setTimeout('progressIntervalId', setInterval(() => {
     console.log('progressIntervalId - called')
   }, timeoutDelay));
-  state.append('queue', 5);
-  state.append('queue', { onCancel: mockCancel1 });
-  state.append('queue', { onCancel: mockCancel2 });
+  state.append('queue', { args: [url] });
+  state.append('queue', { args: [url], onCancel: mockCancel1 });
+  state.append('queue', { args: [url], onCancel: mockCancel2 });
 
   cancelQueuedRequests();
 
-  expect(state.get('isBlocked'), 'isBlocked').is(true);
-  expect(state.get('queueTimeoutId'), 'queueTimeoutId').is(undefined);
-  expect(state.get('queueIntervalId'), 'queueIntervalId').is(undefined);
-  expect(state.get('progressTimeoutId'), 'progressTimeoutId').is(undefined);
-  expect(state.get('progressIntervalId'), 'progressIntervalId').is(undefined);
+  expect(state.flagged('isBlocked'), 'isBlocked').is(true);
+  expect(state.getTimeout('queueTimeoutId'), 'queueTimeoutId').is(undefined);
+  expect(state.getTimeout('queueIntervalId'), 'queueIntervalId').is(undefined);
+  expect(state.getTimeout('progressTimeoutId'), 'progressTimeoutId').is(undefined);
+  expect(state.getTimeout('progressIntervalId'), 'progressIntervalId').is(undefined);
   expect(state.count('queue'), 'queue').is(0);
   expect(mockCancel1.wasCalled()).is(true);
   expect(mockCancel2.wasCalled()).is(true);
   expect(mockCancel1.lastArgs()).equals(['All queued requests canceled.']);
   expect(mockCancel2.lastArgs()).equals(['All queued requests canceled.']);
 
-  const promise = new Promise((resolve, reject) => {
+  const promise = new Promise<void>((resolve, reject) => {
     setTimeout(() => {
       expect(stdout.getBuffer()).equals([
         'Canceling 3 queued requests\n'
@@ -59,14 +61,14 @@ export const withoutQueue = () => {
 
   cancelQueuedRequests();
 
-  expect(state.get('isBlocked'), 'isBlocked').is(true);
+  expect(state.flagged('isBlocked'), 'isBlocked').is(true);
   expect(state.count('queue'), 'queue').is(0);
   expect(stdout.getBuffer()).equals([]);
 }
 
 export const customReason = () => {
   const mockCancel1 = mockFn();
-  state.append('queue', { onCancel: mockCancel1 });
+  state.append('queue', { args: [url], onCancel: mockCancel1 });
   const reason = 'My custom reason';
   cancelQueuedRequests(reason);
   expect(mockCancel1.lastArgs()).equals([reason]);
