@@ -1,4 +1,5 @@
 import { webRequest } from '../src/index.js';
+import { ClientRequest, IncomingMessage } from '../src/types.js';
 
 // Show progress once per second
 webRequest.setEvaluationSeconds(1);
@@ -7,16 +8,15 @@ webRequest.setEvaluationSeconds(1);
 webRequest.setRequestsPerPeriod(1);
 webRequest.setSecondsPerPeriod(2);
 
-const handleRequest = async req => new Promise((resolve, reject) => {
-  let buffer;
+const handleRequest = async (req: ClientRequest) => new Promise<Buffer>((resolve, reject) => {
+  let buffer: Buffer;
   const handleEnd = () => resolve(buffer);
-  const handleResponse = res => {
+  const handleResponse = (res: IncomingMessage) => {
     if (buffer) return;
     buffer = Buffer.alloc(0);
     res.on('error', reject);
     res.on('end', handleEnd);
     res.on('close', handleEnd);
-    res.on('aborted', () => reject('Response aborted'));
     res.on('data', (data) => {
       buffer = Buffer.concat([buffer, data]);
     });
@@ -37,14 +37,14 @@ const all = [];
 for (let i = 0; i < 3; i++) {
   const queued = webRequest
     .queue(`https://github.com/CodeJamboree/?${i}`)
-    .then(handleRequest);
+    ?.then(handleRequest);
   all.push(queued);
 }
 
 Promise.all(all)
   .then(buffers => {
     console.log('Downloaded', buffers.length, 'pages');
-    const bytes = buffers.reduce((sum, buffer) => sum + buffer.length, 0);
+    const bytes = buffers.reduce((sum, buffer) => sum + (buffer?.length ?? 0), 0);
     console.log(bytes, 'bytes total');
   })
   .catch(err => {

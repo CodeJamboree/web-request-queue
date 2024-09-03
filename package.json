@@ -10,7 +10,7 @@
     "sample:https": "npm run build && node ./build/scripts/sample-https.js",
     "sample:queue:cb": "npm run build && node ./build/scripts/sample-queue-cb.js",
     "sample:queue:promise": "npm run build && node ./build/scripts/sample-queue-promise.js",
-    "sample:queue:many": "npm run build && node ./scripts/sample-queue-many.js"
+    "sample:queue:many": "npm run build && node ./build/scripts/sample-queue-many.js"
   },
   "keywords": [
     "throttle",
