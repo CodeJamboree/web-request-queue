@@ -2,53 +2,27 @@ import { handleResponseEnd } from "./handleResponseEnd.js";
 import { mockFn } from '../../scripts/utils/mockFn.js';
 import { expect } from '../../scripts/utils/expect.js';
 import { state } from '../state.js';
+import { IncomingMessage } from "../types.js";
 
-
-// export const handleResponseEnd = (response, onCancel) => () => {
-//   const { statusCode = 200, statusMessage } = response;
-//   if (statusCode === 200) return;
-//   const reason = `Unexpected Status ${statusCode}: ${statusMessage}`;
-//   try {
-//     if (typeof onCancel === 'function') {
-//       return onCancel(reason);
-//     } else {
-//       throw new Error(reason);
-//     }
-//   } catch (e) {
-//     cancelQueuedRequests(`A prior request ended with: ${reason}`);
-//     throw e;
-//   }
-// }
+const url = new URL('https://localhost');
 
 export const ok = () => {
-  const response = {
-    statusCode: 200,
-    statusMessage: 'OK'
-  };
+  const response = mockResponse(200, 'OK');
   const onCancel = undefined;
   handleResponseEnd(response, onCancel)();
 }
 export const created = () => {
-  const response = {
-    statusCode: 201,
-    statusMessage: 'Created'
-  };
+  const response = mockResponse(201, 'Created');
   const onCancel = undefined;
   handleResponseEnd(response, onCancel)();
 }
 export const notFound = () => {
-  const response = {
-    statusCode: 404,
-    statusMessage: 'Not Found'
-  };
+  const response = mockResponse(404, 'Not Found');
   const onCancel = undefined;
   handleResponseEnd(response, onCancel)();
 }
 export const badResponseInvokesCancel = () => {
-  const response = {
-    statusCode: 429,
-    statusMessage: 'Too Many Requests'
-  };
+  const response = mockResponse(429, 'Too Many Requests');
   const onCancel = mockFn();
   handleResponseEnd(response, onCancel)();
   expect(onCancel.lastArgs()).equals(['Unexpected Status 429: Too Many Requests'])
@@ -57,12 +31,12 @@ export const badResponseInvokesCancel = () => {
 export const badResponseCancelsQueue = () => {
   const onCancel = mockFn();
   const onQueuedCancel = mockFn();
-  state.append('queue', { onCancel: onQueuedCancel });
+  state.append('queue', {
+    args: [url],
+    onCancel: onQueuedCancel
+  });
 
-  const response = {
-    statusCode: 401,
-    statusMessage: 'Unauthorized'
-  };
+  const response = mockResponse(401, 'Unauthorized');
   handleResponseEnd(response, onCancel)();
 
   expect(state.count('queue'), 'queue.count').is(0);
@@ -70,4 +44,13 @@ export const badResponseCancelsQueue = () => {
   expect(onQueuedCancel.callCount(), 'onQueuedCancel.callCount').is(1);
   expect(onQueuedCancel.lastArgs(), 'onQueuedCancel.lastArgs').equals(
     ['A prior request ended with: Unexpected Status 401: Unauthorized']);
+}
+
+const mockResponse = (statusCode: number, statusMessage: string): IncomingMessage => {
+  const response = {
+    statusCode,
+    statusMessage,
+    on: () => response
+  };
+  return response;
 }

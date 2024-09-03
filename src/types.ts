@@ -1,9 +1,17 @@
 import http from 'http';
 import https from 'https';
 
-export type IncomingMessage = http.IncomingMessage;
+// export type IncomingMessage = http.IncomingMessage;
 export type RequestOptions = https.RequestOptions
 export type ClientRequest = http.ClientRequest;
+
+export interface IncomingMessage {
+  statusCode?: number,
+  statusMessage?: string,
+  on(event: "error", listener: (err: Error) => void): this;
+  on(event: "end", listener: () => void): this;
+}
+
 
 export interface requestHandler { (clientRequest: ClientRequest | PromiseLike<ClientRequest>): void };
 export interface cancelHandler { (reason: any | PromiseLike<any>): void };

@@ -2,6 +2,7 @@ import { handleResponseEnd } from "./handleResponseEnd.js";
 import { handleResponseError } from "./handleResponseError.js";
 import { cancelHandler, responseHandler } from "../types.js";
 
+
 export const handleResponse = (
   callback: responseHandler | undefined,
   onCancel: cancelHandler | undefined
