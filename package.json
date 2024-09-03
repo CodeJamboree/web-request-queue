@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node ./build/scripts/test.js",
-    "sample:https": "npm run build && node ./scripts/sample-https.js",
+    "sample:https": "npm run build && node ./build/scripts/sample-https.js",
     "sample:queue:cb": "npm run build && node ./scripts/sample-queue-db.js",
     "sample:queue:promise": "npm run build && node ./scripts/sample-queue-promise.js",
     "sample:queue:many": "npm run build && node ./scripts/sample-queue-many.js"
