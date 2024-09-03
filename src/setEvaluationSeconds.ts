@@ -1,10 +1,10 @@
 import { startProgressTimer } from './timers/startProgressTimer.js';
-import { state } from './state.js';
+import { evalInterval, evalTimeout, secondsPerEval, state } from './state.js';
 import { stopProgressTimer } from './timers/stopProgressTimer.js';
 
 export const setEvaluationSeconds = (seconds: number) => {
-  state.setNum('progressSeconds', seconds);
-  if (state.getTimeout('progressIntervalId') || state.getTimeout('progressTimeoutId')) {
+  state.setNum(secondsPerEval, seconds);
+  if (state.hasTimeouts(evalInterval, evalTimeout)) {
     stopProgressTimer();
     startProgressTimer();
   }

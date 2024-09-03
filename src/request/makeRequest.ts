@@ -4,7 +4,9 @@ import { beforeRequest } from './beforeRequest.js';
 import { wrapRequestArgsCallback } from './wrapRequestArgsCallback.js';
 import { handleRequestError } from './handleRequestError.js';
 import { queueParams, RequestOptions, responseHandler } from '../types.js';
-
+import { WebQueueError } from '../WebQueueError.js';
+import { wrongArgCount } from '../locale.js';
+import { invoke } from '../utils/invoke.js';
 
 export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
 
@@ -33,14 +35,12 @@ export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
       );
       break;
     default:
-      throw new Error(`Expected to have 2 - 3 arguments. Recieved ${preparedArgs.length}`);
+      throw new WebQueueError(wrongArgCount('request', preparedArgs.length, 2, 3));
   }
 
   clientRequest.on('error', handleRequestError(clientRequest, onCancel));
 
-  if (typeof onRequested === 'function') {
-    onRequested(clientRequest);
-  }
+  invoke(onRequested, clientRequest);
 
   return true;
 }

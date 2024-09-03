@@ -1,107 +1,188 @@
+import { replaceActiveTimer } from "./locale.js";
 import { queueParams } from "./types.js";
+import { WebQueueError } from './WebQueueError.js';
 
-type dateKeys = 'lastAt' |
-  'firstAt' |
-  'progressedAt'
-type timeoutKeys = 'progressIntervalId' |
-  'progressTimeoutId' |
-  'queueIntervalId' |
-  'queueTimeoutId';
-type booleanKeys = 'isBlocked';
+type vars = 'state';
+const vars: vars = 'state';
+const none = undefined;
+
+type recentRequest = 'recentRequest';
+type firstRequest = 'firstRequest';
+type recentEval = 'recentEval';
+type dateKeys = recentRequest | firstRequest | recentEval;
+
+export const recentRequest: recentRequest = 'recentRequest';
+export const firstRequest: firstRequest = 'firstRequest';
+export const recentEval: recentEval = 'recentEval';
+
+type evalInterval = 'evalInterval';
+type evalTimeout = 'evalTimeout';
+type queueInterval = 'queueInterval';
+type queueTimeout = 'queueTimeout';
+
+type timeoutKeys = evalInterval |
+  evalTimeout |
+  queueInterval |
+  queueTimeout;
+
+export const evalInterval: evalInterval = 'evalInterval';
+export const evalTimeout: evalTimeout = 'evalTimeout';
+export const queueInterval: queueInterval = 'queueInterval';
+export const queueTimeout: queueTimeout = 'queueTimeout';
+
+type booleanKeys = 'blocked';
+
+export const blocked: booleanKeys = 'blocked';
+
 type arrayKeys = 'queue';
-type numericKeys = 'requestCount' |
-  'expectedCount' |
-  'priorRemainingCount' |
-  'priorPresumedTotal' |
-  'throttleCount' |
-  'throttleSeconds' |
-  'progressSeconds';
+
+export const queue: arrayKeys = 'queue';
+
+type requested = 'requested';
+type expected = 'expected';
+type priorRemaining = 'priorRemaining';
+type priorTotal = 'priorTotal';
+type maxPerPeriod = 'maxPerPeriod';
+type secondsPerPeriod = 'secondsPerPeriod';
+type secondsPerEval = 'secondsPerEval';
+
+type numericKeys = requested |
+  expected |
+  priorRemaining |
+  priorTotal |
+  maxPerPeriod |
+  secondsPerPeriod |
+  secondsPerEval;
+
+export const requested: requested = 'requested';
+export const expected: expected = 'expected';
+export const priorRemaining: priorRemaining = 'priorRemaining';
+export const priorTotal: priorTotal = 'priorTotal';
+export const maxPerPeriod: maxPerPeriod = 'maxPerPeriod';
+export const secondsPerPeriod: secondsPerPeriod = 'secondsPerPeriod';
+export const secondsPerEval: secondsPerEval = 'secondsPerEval';
 
 type arrayType = queueParams;
+const datesKey = 'dates';
+const timeoutsKey = 'timeouts';
+const flagsKey = 'flags';
+const numsKey = 'nums';
+const arraysKey = 'arrays';
+
+type timeoutType = 'interval' | 'timeout';
+interface timeout {
+  timer: NodeJS.Timeout | number | undefined,
+  type: timeoutType,
+  active: boolean
+}
 
 type collectionType = {
-  dates: { [key in dateKeys]: Date | undefined },
-  timeouts: { [key in timeoutKeys]: NodeJS.Timeout | number | undefined },
-  flags: { [key in booleanKeys]: boolean },
-  nums: { [key in numericKeys]: number },
-  arrays: { [key in arrayKeys]: any[] }
+  [datesKey]: { [key in dateKeys]: Date | undefined },
+  [timeoutsKey]: { [key in timeoutKeys]: timeout | undefined },
+  [flagsKey]: { [key in booleanKeys]: boolean },
+  [numsKey]: { [key in numericKeys]: number },
+  [arraysKey]: { [key in arrayKeys]: any[] }
 }
 
 class State {
-  state: collectionType = {
-    dates: {
-      lastAt: undefined,
-      firstAt: undefined,
-      progressedAt: undefined,
+  [vars]: collectionType = {
+    [datesKey]: {
+      [recentRequest]: none,
+      [firstRequest]: none,
+      [recentEval]: none,
     },
-    flags: {
-      isBlocked: false,
+    [flagsKey]: {
+      [blocked]: false,
     },
-    arrays: {
-      queue: [],
+    [arraysKey]: {
+      [queue]: [],
     },
-    timeouts: {
-      progressIntervalId: undefined,
-      progressTimeoutId: undefined,
-      queueIntervalId: undefined,
-      queueTimeoutId: undefined,
+    [timeoutsKey]: {
+      [evalInterval]: none,
+      [evalTimeout]: none,
+      [queueInterval]: none,
+      [queueTimeout]: none,
     },
-    nums: {
-      requestCount: 0,
-      expectedCount: 1,
-      priorRemainingCount: 0,
-      priorPresumedTotal: 0,
-      throttleCount: 100,
-      throttleSeconds: 60,
-      progressSeconds: Infinity
+    [numsKey]: {
+      [requested]: 0,
+      [expected]: 1,
+      [priorRemaining]: 0,
+      [priorTotal]: 0,
+      [maxPerPeriod]: 100,
+      [secondsPerPeriod]: 60,
+      [secondsPerEval]: Infinity
     }
   };
 
-  getNum(key: numericKeys): number {
-    return this.state.nums[key];
+  setNum(key: numericKeys, value: number) {
+    this[vars][numsKey][key] = value;
   }
   increment(key: numericKeys) {
-    this.state.nums[key]++;
+    this[vars][numsKey][key]++;
+  }
+  getNum(key: numericKeys): number {
+    return this[vars][numsKey][key];
   }
   getDate(key: dateKeys): Date | undefined {
-    return this.state.dates[key];
-  }
-  getTimeout(key: timeoutKeys): number | NodeJS.Timeout | undefined {
-    return this.state.timeouts[key];
+    return this[vars][datesKey][key];
   }
   flagged(key: booleanKeys): boolean {
-    return this.state.flags[key];
-  }
-  setNum(key: numericKeys, value: number) {
-    this.state.nums[key] = value;
+    return this[vars][flagsKey][key];
   }
   setDate(key: dateKeys, value: Date | undefined) {
-    this.state.dates[key] = value;
+    this[vars][datesKey][key] = value;
   }
   setNow(key: dateKeys) {
     this.setDate(key, new Date());
   }
   removeDate(key: dateKeys) {
-    this.setDate(key, undefined);
+    this.setDate(key, none);
   }
-  setTimeout(key: timeoutKeys, value: number | NodeJS.Timeout | undefined) {
-    const existing = this.state.timeouts[key];
-    if (typeof existing === 'object' && '_destroyed' in existing && (!existing._destroyed)) {
-      throw new Error(`Attempted to replace ${key} before it was destroyed.`);
+  setTimeout(key: timeoutKeys, type: timeoutType, callback: Function, ms: number) {
+    const existing = this[vars][timeoutsKey][key];
+    if (existing && existing.active) {
+      throw new WebQueueError(replaceActiveTimer(key));
     }
-    this.state.timeouts[key] = value;
+    let timer;
+    if (type === 'interval') {
+      timer = setInterval(callback, ms);
+    } else {
+      timer = setTimeout(callback, ms);
+    }
+    this[vars][timeoutsKey][key] = {
+      type,
+      timer,
+      active: true
+    };
   }
-  removeTimeout(key: timeoutKeys) {
-    this.setTimeout(key, undefined);
+  clearTimeouts(...keys: timeoutKeys[]) {
+    keys.forEach(key => {
+      const timeout = this[vars][timeoutsKey][key];
+      if (timeout) {
+        if (timeout.type === 'interval') {
+          clearInterval(timeout.timer);
+        } else {
+          clearTimeout(timeout.timer);
+        }
+        timeout.active = false;
+      }
+      this[vars][timeoutsKey][key] = none;
+    })
+  }
+  hasTimeouts(...keys: timeoutKeys[]): boolean {
+    return keys.some(key => this[vars][timeoutsKey][key]);
   }
   flag(key: booleanKeys, value: boolean = true) {
-    this.state.flags[key] = value;
+    this[vars][flagsKey][key] = value;
   }
   private getArray<T extends arrayType>(key: arrayKeys): T[] {
-    return this.state.arrays[key] as T[];
+    return this[vars][arraysKey][key] as T[];
   }
   count<T extends arrayType>(key: arrayKeys) {
     return this.getArray<T>(key).length;
+  }
+  empty<T extends arrayType>(key: arrayKeys) {
+    return this.getArray<T>(key).length === 0;
   }
   append<T extends arrayType>(key: arrayKeys, value: T) {
     this.getArray(key).push(value);
@@ -116,32 +197,32 @@ class State {
     return this.getArray<T>(key).splice(0);
   }
   reset() {
-    this.state = {
-      dates: {
-        lastAt: undefined,
-        firstAt: undefined,
-        progressedAt: undefined,
+    this[vars] = {
+      [datesKey]: {
+        [recentRequest]: none,
+        [firstRequest]: none,
+        [recentEval]: none,
       },
-      flags: {
-        isBlocked: false,
+      [flagsKey]: {
+        [blocked]: false,
       },
-      arrays: {
-        queue: [],
+      [arraysKey]: {
+        [queue]: [],
       },
-      timeouts: {
-        progressIntervalId: undefined,
-        progressTimeoutId: undefined,
-        queueIntervalId: undefined,
-        queueTimeoutId: undefined,
+      [timeoutsKey]: {
+        [evalInterval]: none,
+        [evalTimeout]: none,
+        [queueInterval]: none,
+        [queueTimeout]: none,
       },
-      nums: {
-        requestCount: 0,
-        expectedCount: 1,
-        priorRemainingCount: 0,
-        priorPresumedTotal: 0,
-        throttleCount: 100,
-        throttleSeconds: 60,
-        progressSeconds: Infinity
+      [numsKey]: {
+        [requested]: 0,
+        [expected]: 1,
+        [priorRemaining]: 0,
+        [priorTotal]: 0,
+        [maxPerPeriod]: 100,
+        [secondsPerPeriod]: 60,
+        [secondsPerEval]: Infinity
       }
     }
   }

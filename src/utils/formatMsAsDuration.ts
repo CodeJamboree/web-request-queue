@@ -1,13 +1,17 @@
 
+import { isNumber } from "./isNumber.js";
+import { isString } from "./isString.js";
 import { msMap, microsecondKey, unitType } from "./msMap.js";
-
+const msUnit = 'ms';
+const secondsUnit = 's';
+const yearUnit = 'y';
 
 const units: unitType[] = [
-  'y', 'mo', 'd', 'h', 'mi', 's', 'ms',
+  yearUnit, 'mo', 'd', 'h', 'mi', secondsUnit, msUnit,
   microsecondKey, 'ns', 'ps', 'fs', 'as', 'zs'
 ];
-const msIndex = units.indexOf('ms');
-const yearIndex = units.indexOf('y');
+const msIndex = units.indexOf(msUnit);
+const yearIndex = units.indexOf(yearUnit);
 const maxUnits = 3;
 
 interface parsedUnit {
@@ -22,31 +26,34 @@ interface parseState {
 }
 export const formatMsAsDuration = (ms: any) => {
   if (ms === undefined || ms === null) return;
-  if (typeof ms === 'string') {
+  if (isString(ms)) {
     ms = parseFloat(ms);
   }
+  if (!isNumber(ms)) return;
+  if (isNaN(ms)) return;
+  switch (ms) {
+    case 0: return 'instant';
+    case Infinity: return 'forever';
+    case -Infinity: return 'never';
+    default: break;
+  }
 
-  if (ms === 0) return 'instant';
-  if (ms === Infinity) return 'forever';
-  if (ms === -Infinity) return 'never';
   if (ms > Number.MAX_SAFE_INTEGER) return 'distant future';
   if (ms <= Number.MIN_SAFE_INTEGER) return 'distant past';
-  if (typeof ms === 'number' && isNaN(ms)) return;
-  if (typeof ms !== 'number') return;
 
-  let signed = false;
+  let sign = '';
   if (ms < 0) {
-    signed = true;
+    sign = '-';
     ms *= -1;
   }
   const parsed = units.reduce(parseParts, { ms, parts: [], count: 0 });
 
   if (parsed.parts.length === 0) {
-    return signed ? '-0s' : '0s';
+    return `${sign}0${secondsUnit}`;
   }
 
   let text = parsed.parts.reduce(joinParts, '');
-  return (signed ? '-' : '') + text;
+  return `${sign}${text}`;
 }
 
 const parseParts = (state: parseState, unit: unitType, index: number) => {
@@ -58,7 +65,7 @@ const parseParts = (state: parseState, unit: unitType, index: number) => {
   let first = state.parts.length === 0;
 
   if (units === 0) {
-    if (state.parts.length === 0 || state.parts.length >= maxUnits) {
+    if (first || state.parts.length >= maxUnits) {
       return state;
     }
 
@@ -80,27 +87,24 @@ const parseParts = (state: parseState, unit: unitType, index: number) => {
 
 const joinParts = (duration: string, { text, unit, index }: parsedUnit, i: number, a: parsedUnit[]) => {
   let prefix = '';
+  const isMs = unit === msUnit;
+  const isLast = i === a.length - 1;
   if (i === 0) {
-    if (unit === 'ms') {
+    if (isMs) {
       prefix = '0.';
     }
   } else {
-    if (unit === 'ms') {
-      prefix = '.'
-    } else {
-      prefix = ':';
-    }
+    prefix = isMs ? '.' : ':';
   }
 
-  if (unit === 's' && i !== a.length - 1) {
-    return `${duration}${prefix}${text}`;
-  }
-  if (unit === 'ms') {
-    return `${duration}${prefix}${text}s`;
-  }
-  if (index < yearIndex || index > msIndex) {
-    return `${duration}${prefix}${text}${unit}`
+  let suffix: string = '';
+  if (unit === secondsUnit && !isLast) {
+  } else if (isMs) {
+    suffix = secondsUnit;
+  } else if (index < yearIndex || index > msIndex) {
+    suffix = unit;
   } else {
-    return `${duration}${prefix}${text}${unit.charAt(0)}`
+    suffix = unit.charAt(0);
   }
+  return `${duration}${prefix}${text}${suffix}`;
 }

@@ -1,18 +1,18 @@
-import { state } from '../state.js';
+import { state, blocked, queue } from '../state.js';
 import { stopTimers } from './stopTimers.js';
 import { makeRequest } from '../request/makeRequest.js';
 
 export const handleQueueInterval = () => {
-  if (state.flagged('isBlocked')) {
+  if (state.flagged(blocked)) {
     stopTimers();
   }
-  const params = state.removeFirst('queue');
+  const params = state.removeFirst(queue);
   if (params) {
     if (!makeRequest(params)) {
-      state.prepend('queue', params);
+      state.prepend(queue, params);
     }
   }
-  if (state.count('queue') === 0) {
+  if (state.empty(queue)) {
     stopTimers();
   }
 }

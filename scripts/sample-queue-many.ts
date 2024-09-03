@@ -1,5 +1,6 @@
 import { webRequest } from '../src/index.js';
 import { ClientRequest, IncomingMessage } from '../src/types.js';
+import { __assign } from 'tslib';
 
 // Show progress once per second
 webRequest.setEvaluationSeconds(1);

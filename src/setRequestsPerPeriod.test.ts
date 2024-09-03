@@ -1,33 +1,31 @@
 import { setRequestsPerPeriod } from './setRequestsPerPeriod.js';
 import { expect } from '../scripts/utils/expect.js';
-import { state } from './state.js';
-
-const stateKey = 'throttleCount';
+import { maxPerPeriod, state } from './state.js';
 
 export const one = () => {
   setRequestsPerPeriod(1);
-  expect(state.getNum(stateKey)).is(1);
+  expect(state.getNum(maxPerPeriod)).is(1);
 }
 export const zero = () => {
-  const count = state.getNum(stateKey);
+  const count = state.getNum(maxPerPeriod);
   expect(() => {
     setRequestsPerPeriod(0);
-  }).toThrow("Max requests per period must be 1 or more. Got 0.");
-  expect(state.getNum(stateKey)).is(count);
+  }).toThrow("WebQueueError: max out of range (0). Must be finite number at 1 or more.");
+  expect(state.getNum(maxPerPeriod)).is(count);
 }
 export const infinite = () => {
-  const count = state.getNum(stateKey);
+  const count = state.getNum(maxPerPeriod);
   expect(() => {
     setRequestsPerPeriod(Infinity);
-  }).toThrow("Max requests per period must be 1 or more. Got Infinity.");
-  expect(state.getNum(stateKey)).is(count);
+  }).toThrow("WebQueueError: max out of range (Infinity). Must be finite number at 1 or more.");
+  expect(state.getNum(maxPerPeriod)).is(count);
 }
 
 export const booleanTrue = () => {
-  const count = state.getNum(stateKey);
+  const count = state.getNum(maxPerPeriod);
   expect(() => {
     // @ts-expect-error
     setRequestsPerPeriod(true);
-  }).toThrow("Max requests per period must be 1 or more. Got true.");
-  expect(state.getNum(stateKey)).is(count);
+  }).toThrow("WebQueueError: max out of range (true). Must be finite number at 1 or more.");
+  expect(state.getNum(maxPerPeriod)).is(count);
 }

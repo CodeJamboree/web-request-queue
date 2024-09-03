@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "bundle": "npx rollup -c",
     "test": "npm run build && node ./build/scripts/test.js",
     "sample:https": "npm run build && node ./build/scripts/sample-https.js",
     "sample:queue:cb": "npm run build && node ./build/scripts/sample-queue-cb.js",
@@ -21,7 +22,13 @@
   "author": "Code Jamboree LLC",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^22.5.2",
+    "rollup": "^4.21.2",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "tslib": "^2.7.0",
     "typescript": "^5.5.4"
   }
 }

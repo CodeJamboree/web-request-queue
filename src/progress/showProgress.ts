@@ -1,41 +1,41 @@
-import { state } from '../state.js';
+import { state, firstRequest, recentEval, queue, requested as requestedKey, expected as expectedKey, priorRemaining, priorTotal } from '../state.js';
 import { formatMsAsDuration } from '../utils/formatMsAsDuration.js';
 import { timeSince } from '../utils/timeSince.js';
 import { timeLogger } from './timeLogger.js';
 
 export const showProgress = () => {
 
-  const requestCount = state.getNum('requestCount');
-  const expectedCount = state.getNum('expectedCount');
-  const queueCount = state.count('queue');
-  const priorRemainingCount = state.getNum('priorRemainingCount');
-  const priorPresumedTotal = state.getNum('priorPresumedTotal');
+  const requested = state.getNum(requestedKey);
+  const expected = state.getNum(expectedKey);
+  const oldRemaining = state.getNum(priorRemaining);
+  const oldTotal = state.getNum(priorTotal);
+  const queued = state.count(queue);
 
-  const remainingCount = expectedCount ?
-    Math.max(queueCount, expectedCount - requestCount) :
-    queueCount;
+  const remaining = expected ?
+    Math.max(queued, expected - requested) :
+    queued;
 
-  const presumedTotal = remainingCount + requestCount;
+  const total = remaining + requested;
 
-  if (priorRemainingCount === remainingCount &&
-    priorPresumedTotal === presumedTotal
+  if (oldRemaining === remaining &&
+    oldTotal === total
   ) return;
 
-  state.setNow('progressedAt');
-  state.setNum('priorRemainingCount', remainingCount);
-  state.setNum('priorPresumedTotal', presumedTotal);
+  state.setNow(recentEval);
+  state.setNum(priorRemaining, remaining);
+  state.setNum(priorTotal, total);
 
-  const stats: any[] = [requestCount];
-  if (requestCount !== presumedTotal) {
-    stats.push('of', presumedTotal);
+  const stats: any[] = [requested];
+  if (requested !== total) {
+    stats.push('of', total);
   }
-  if (requestCount > 0 && remainingCount > 0) {
-    const firstAt = state.getDate('firstAt');
+  if (requested > 0 && remaining > 0) {
+    const firstAt = state.getDate(firstRequest);
     if (firstAt) {
       const msElapsed = timeSince(firstAt);
       if (msElapsed > 0) {
-        const msPerReq = msElapsed / requestCount;
-        const msRemaining = remainingCount * msPerReq;
+        const msPerReq = msElapsed / requested;
+        const msRemaining = remaining * msPerReq;
         const durationRemaining = formatMsAsDuration(msRemaining);
         stats.push('~', durationRemaining);
       }

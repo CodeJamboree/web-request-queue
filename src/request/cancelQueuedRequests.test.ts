@@ -1,5 +1,5 @@
 import { expect } from '../../scripts/utils/expect.js';
-import { state } from '../state.js';
+import { evalInterval, evalTimeout, queueInterval, queueTimeout, state, blocked, queue } from '../state.js';
 import { cancelQueuedRequests } from './cancelQueuedRequests.js';
 import { mockFn } from '../../scripts/utils/mockFn.js';
 import { stdout } from '../../scripts/utils/stdout.js';
@@ -13,31 +13,31 @@ export const mainFlow = async () => {
   const mockCancel1 = mockFn();
   const mockCancel2 = mockFn();
 
-  state.flag('isBlocked', false);
-  state.setTimeout('queueTimeoutId', setTimeout(() => {
-    console.log('queueTimeoutId - called')
-  }, timeoutDelay));
-  state.setTimeout('queueIntervalId', setInterval(() => {
-    console.log('queueIntervalId - called')
-  }, timeoutDelay));
-  state.setTimeout('progressTimeoutId', setTimeout(() => {
-    console.log('progressTimeoutId - called')
-  }, timeoutDelay));
-  state.setTimeout('progressIntervalId', setInterval(() => {
-    console.log('progressIntervalId - called')
-  }, timeoutDelay));
-  state.append('queue', { args: [url] });
-  state.append('queue', { args: [url], onCancel: mockCancel1 });
-  state.append('queue', { args: [url], onCancel: mockCancel2 });
+  state.flag(blocked, false);
+  state.setTimeout(queueTimeout, 'timeout', () => {
+    console.log(queueTimeout, 'called')
+  }, timeoutDelay);
+  state.setTimeout(queueInterval, 'interval', () => {
+    console.log(queueInterval, 'called')
+  }, timeoutDelay);
+  state.setTimeout(evalTimeout, 'timeout', () => {
+    console.log(evalTimeout, 'called')
+  }, timeoutDelay);
+  state.setTimeout(evalInterval, 'interval', () => {
+    console.log(evalInterval, 'called')
+  }, timeoutDelay);
+  state.append(queue, { args: [url] });
+  state.append(queue, { args: [url], onCancel: mockCancel1 });
+  state.append(queue, { args: [url], onCancel: mockCancel2 });
 
   cancelQueuedRequests();
 
-  expect(state.flagged('isBlocked'), 'isBlocked').is(true);
-  expect(state.getTimeout('queueTimeoutId'), 'queueTimeoutId').is(undefined);
-  expect(state.getTimeout('queueIntervalId'), 'queueIntervalId').is(undefined);
-  expect(state.getTimeout('progressTimeoutId'), 'progressTimeoutId').is(undefined);
-  expect(state.getTimeout('progressIntervalId'), 'progressIntervalId').is(undefined);
-  expect(state.count('queue'), 'queue').is(0);
+  expect(state.flagged(blocked), blocked).is(true);
+  expect(state.hasTimeouts(queueTimeout), queueTimeout).is(false);
+  expect(state.hasTimeouts(queueInterval), queueInterval).is(false);
+  expect(state.hasTimeouts(evalTimeout), evalTimeout).is(false);
+  expect(state.hasTimeouts(evalInterval), evalInterval).is(false);
+  expect(state.count(queue), queue).is(0);
   expect(mockCancel1.wasCalled()).is(true);
   expect(mockCancel2.wasCalled()).is(true);
   expect(mockCancel1.lastArgs()).equals(['All queued requests canceled.']);
@@ -57,18 +57,18 @@ export const mainFlow = async () => {
 
 export const withoutQueue = () => {
 
-  expect(state.count('queue'), 'queue').is(0);
+  expect(state.count(queue), queue).is(0);
 
   cancelQueuedRequests();
 
-  expect(state.flagged('isBlocked'), 'isBlocked').is(true);
-  expect(state.count('queue'), 'queue').is(0);
+  expect(state.flagged(blocked), blocked).is(true);
+  expect(state.count(queue), queue).is(0);
   expect(stdout.getBuffer()).equals([]);
 }
 
 export const customReason = () => {
   const mockCancel1 = mockFn();
-  state.append('queue', { args: [url], onCancel: mockCancel1 });
+  state.append(queue, { args: [url], onCancel: mockCancel1 });
   const reason = 'My custom reason';
   cancelQueuedRequests(reason);
   expect(mockCancel1.lastArgs()).equals([reason]);

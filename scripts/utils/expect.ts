@@ -8,7 +8,7 @@ export const expect = <T>(actual: T, details?: any) => {
       const a = serialize(actual);
       const e = serialize(expected);
       if (a !== e) {
-        throw new ExpectationError(`equal`, { details, expected, actual });
+        throw new ExpectationError(`equal`, { details, expected: e, actual: a });
       }
     },
     isFunction: () => {

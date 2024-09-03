@@ -1,7 +1,7 @@
 import { handleResponseEnd } from "./handleResponseEnd.js";
 import { mockFn } from '../../scripts/utils/mockFn.js';
 import { expect } from '../../scripts/utils/expect.js';
-import { state } from '../state.js';
+import { queue, state } from '../state.js';
 import { IncomingMessage } from "../types.js";
 
 const url = new URL('https://localhost');
@@ -31,7 +31,7 @@ export const badResponseInvokesCancel = () => {
 export const badResponseCancelsQueue = () => {
   const onCancel = mockFn();
   const onQueuedCancel = mockFn();
-  state.append('queue', {
+  state.append(queue, {
     args: [url],
     onCancel: onQueuedCancel
   });
@@ -39,7 +39,7 @@ export const badResponseCancelsQueue = () => {
   const response = mockResponse(401, 'Unauthorized');
   handleResponseEnd(response, onCancel)();
 
-  expect(state.count('queue'), 'queue.count').is(0);
+  expect(state.empty(queue), 'queue.count').is(true);
   expect(onCancel.lastArgs(), 'onCancel.lastArgs').equals(['Unexpected Status 401: Unauthorized']);
   expect(onQueuedCancel.callCount(), 'onQueuedCancel.callCount').is(1);
   expect(onQueuedCancel.lastArgs(), 'onQueuedCancel.lastArgs').equals(

@@ -1,5 +1,8 @@
 import { handleResponse } from './handleResponse.js';
-import { cancelHandler, requestArgs, RequestOptions } from '../types.js';
+import { cancelHandler, requestArgs, RequestOptions, responseHandler } from '../types.js';
+import { WebQueueError } from '../WebQueueError.js';
+import { wrongArgCount } from '../locale.js';
+import { isFunction } from '../utils/isFunction.js';
 
 export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, requestArgs: requestArgs): requestArgs => {
 
@@ -13,10 +16,13 @@ export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, req
         handleResponse(undefined, onCancel)
       ];
     case 2:
-      if (typeof optionsOrCallback === 'function') {
+      if (isFunction(optionsOrCallback)) {
         return [
           urlOrOptions,
-          handleResponse(optionsOrCallback, onCancel)
+          handleResponse(
+            optionsOrCallback,
+            onCancel
+          )
         ];
       } else {
         return [
@@ -32,6 +38,6 @@ export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, req
         handleResponse(callback, onCancel)
       ];
     default:
-      throw new Error(`Expected 1 to 3 arguments for request. Received ${count}`);
+      throw new WebQueueError(wrongArgCount('request', count, 1, 3));
   }
 }

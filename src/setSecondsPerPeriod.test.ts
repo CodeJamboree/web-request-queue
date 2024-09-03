@@ -1,33 +1,31 @@
 import { expect } from '../scripts/utils/expect.js';
-import { state } from './state.js';
+import { secondsPerPeriod, state } from './state.js';
 import { setSecondsPerPeriod } from './setSecondsPerPeriod.js';
-
-const stateKey = 'throttleSeconds';
 
 export const oneMs = () => {
   setSecondsPerPeriod(1);
-  expect(state.getNum(stateKey)).is(1);
+  expect(state.getNum(secondsPerPeriod)).is(1);
 }
 export const zero = () => {
-  const count = state.getNum(stateKey);
+  const count = state.getNum(secondsPerPeriod);
   expect(() => {
     setSecondsPerPeriod(0);
-  }).toThrow("Seconds per throttle period must be 1 or more. Got 0.");
-  expect(state.getNum(stateKey)).is(count);
+  }).toThrow("WebQueueError: seconds out of range (0). Must be finite number at 1 or more.");
+  expect(state.getNum(secondsPerPeriod)).is(count);
 }
 export const infinity = () => {
-  const count = state.getNum(stateKey);
+  const count = state.getNum(secondsPerPeriod);
   expect(() => {
     setSecondsPerPeriod(Infinity);
-  }).toThrow("Seconds per throttle period must be 1 or more. Got Infinity.");
-  expect(state.getNum(stateKey)).is(count);
+  }).toThrow("WebQueueError: seconds out of range (Infinity). Must be finite number at 1 or more.");
+  expect(state.getNum(secondsPerPeriod)).is(count);
 }
 
 export const booleanTrue = () => {
-  const count = state.getNum(stateKey);
+  const count = state.getNum(secondsPerPeriod);
   expect(() => {
     // @ts-expect-error
     setSecondsPerPeriod(true);
-  }).toThrow("Seconds per throttle period must be 1 or more. Got true.");
-  expect(state.getNum(stateKey)).is(count);
+  }).toThrow("WebQueueError: seconds out of range (true). Must be finite number at 1 or more.");
+  expect(state.getNum(secondsPerPeriod)).is(count);
 }

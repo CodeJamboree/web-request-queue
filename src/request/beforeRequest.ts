@@ -1,11 +1,11 @@
-import { state } from '../state.js';
+import { state, recentRequest, firstRequest, requested } from '../state.js';
 import { timeLogger } from '../progress/timeLogger.js';
 
 export const beforeRequest = () => {
-  state.setNow('lastAt');
-  if (!state.getDate('firstAt')) {
+  state.setNow(recentRequest);
+  if (!state.getDate(firstRequest)) {
     timeLogger.start();
-    state.setNow('firstAt');
+    state.setNow(firstRequest);
   }
-  state.increment('requestCount');
+  state.increment(requested);
 }

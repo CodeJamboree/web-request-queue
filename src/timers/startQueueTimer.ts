@@ -1,4 +1,4 @@
-import { state } from '../state.js';
+import { queue, queueInterval, queueTimeout, state } from '../state.js';
 import { handleQueueInterval } from './handleQueueInterval.js';
 import { msPerRequest } from '../request/msPerRequest.js';
 import { delayRequest } from '../request/delayRequest.js';
@@ -6,8 +6,7 @@ import { adjustTimeout } from './adjustTimeout.js';
 
 export const startQueueTimer = () => {
   if (
-    state.getTimeout('queueIntervalId') ||
-    state.getTimeout('queueTimeoutId')
+    state.hasTimeouts(queueInterval, queueTimeout)
   ) return;
 
   const delayMs = delayRequest();
@@ -17,27 +16,24 @@ export const startQueueTimer = () => {
     return;
   }
 
-  state.setTimeout('queueTimeoutId', setTimeout(
+  state.setTimeout(
+    queueTimeout,
+    'timeout',
     delayedStart,
     adjustTimeout(delayMs)
-  ));
+  );
 }
 
 const delayedStart = () => {
-  const queueTimeoutId = state.getTimeout('queueTimeoutId');
-  if (queueTimeoutId) {
-    clearTimeout(queueTimeoutId);
-    state.removeTimeout('queueTimeoutId');
-  }
+  state.clearTimeouts(queueTimeout);
   startInterval();
 }
 
 const startInterval = () => {
-  const queueCount = state.count('queue');
-  if (queueCount === 0) return;
-  state.setTimeout('queueIntervalId', setInterval(
+  if (state.empty(queue)) return;
+  state.setTimeout(queueInterval, 'interval',
     handleQueueInterval,
     adjustTimeout(msPerRequest())
-  ));
+  );
   handleQueueInterval();
 }

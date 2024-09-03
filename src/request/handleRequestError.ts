@@ -1,13 +1,13 @@
 import { cancelQueuedRequests } from './cancelQueuedRequests.js';
 import { cancelHandler, ClientRequest } from '../types.js';
+import { otherRequestError } from '../locale.js';
+import { invoke } from '../utils/invoke.js';
 
 export const handleRequestError = (_request: ClientRequest, onCancel: cancelHandler | undefined) => (error: Error) => {
   try {
-    if (typeof onCancel === 'function') {
-      return onCancel(error);
-    }
+    invoke(onCancel, error);
   } catch (e) {
-    cancelQueuedRequests(`A prior request had an error: ${error}`);
+    cancelQueuedRequests(otherRequestError(error));
     throw e;
   }
 }

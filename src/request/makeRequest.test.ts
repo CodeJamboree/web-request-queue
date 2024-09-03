@@ -1,6 +1,6 @@
 import { makeRequest } from "./makeRequest.js";
 import { expect } from '../../scripts/utils/expect.js';
-import { state } from '../state.js';
+import { state, recentRequest, maxPerPeriod, secondsPerPeriod } from '../state.js';
 import { httpsMocker } from "../../scripts/utils/httpsMocker.js";
 import { mockFn } from "../../scripts/utils/mockFn.js";
 import { RequestOptions, requestArgs } from '../types.js';
@@ -10,9 +10,9 @@ const setupDelay = (isDelayed = true) => {
   const date = new Date();
   if (!isDelayed)
     date.setTime(date.getTime() - 1000);
-  state.setDate('lastAt', date);
-  state.setNum('throttleSeconds', 1);
-  state.setNum('throttleCount', 1);
+  state.setDate(recentRequest, date);
+  state.setNum(secondsPerPeriod, 1);
+  state.setNum(maxPerPeriod, 1);
 }
 export const requestDelayed = () => {
   setupDelay();
@@ -50,7 +50,7 @@ export const lastRequestUpdated = () => {
   const requested = makeRequest({ args: [url, options], onRequested, onCancel })
 
   expect(requested).is(true);
-  expect(state.getDate('lastAt')).equals(new Date());
+  expect(state.getDate(recentRequest)).equals(new Date());
 }
 export const callbackForResponse = () => {
   setupDelay(false);

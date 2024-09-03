@@ -1,18 +1,18 @@
-import { state } from '../state.js';
+import { cancelingQueued, cancelQueueReason } from '../locale.js';
+import { state, blocked, queue } from '../state.js';
 import { stopTimers } from '../timers/stopTimers.js';
 import { queueParams } from '../types.js';
+import { invoke } from '../utils/invoke.js';
 
-export const cancelQueuedRequests = (reason: any = `All queued requests canceled.`) => {
-  state.flag('isBlocked');
+export const cancelQueuedRequests = (reason: any = cancelQueueReason()) => {
+  state.flag(blocked);
   stopTimers();
-  if (state.count('queue') === 0) return;
+  if (state.empty(queue)) return;
 
-  const copy = state.removeAll('queue') as queueParams[];
+  const copy = state.removeAll(queue) as queueParams[];
 
-  console.info(`Canceling ${copy.length} queued requests`);
+  console.info(cancelingQueued(copy.length));
   copy.forEach(({ onCancel }) => {
-    if (typeof onCancel === 'function') {
-      onCancel(reason);
-    }
+    invoke(onCancel, reason);
   });
 }

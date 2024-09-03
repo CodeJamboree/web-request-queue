@@ -1,16 +1,16 @@
 import { showProgress } from "../progress/showProgress.js";
 import { stopProgressTimer } from "./stopProgressTimer.js";
 import { delayProgress } from '../progress/delayProgress.js';
-import { state } from '../state.js';
+import { state, firstRequest, secondsPerEval } from '../state.js';
 
 export const handleProgressInterval = () => {
-  if (state.getNum('progressSeconds') === Infinity) {
+  if (state.getNum(secondsPerEval) === Infinity) {
     stopProgressTimer();
     return;
   }
 
-  const firstAt = state.getDate('firstAt');
-  if (!firstAt) return;
+  const first = state.getDate(firstRequest);
+  if (!first) return;
   const delayMs = delayProgress();
   if (delayMs) return;
 
