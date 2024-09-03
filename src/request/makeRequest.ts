@@ -3,7 +3,7 @@ import { delayRequest } from './delayRequest.js';
 import { beforeRequest } from './beforeRequest.js';
 import { wrapRequestArgsCallback } from './wrapRequestArgsCallback.js';
 import { handleRequestError } from './handleRequestError.js';
-import { queueParams, RequestOptions } from '../types.js';
+import { queueParams, RequestOptions, responseHandler } from '../types.js';
 
 
 export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
@@ -20,7 +20,10 @@ export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
 
   switch (preparedArgs.length) {
     case 2:
-      clientRequest = https.request(urlOrOptions, callback);
+      clientRequest = https.request(
+        urlOrOptions as string | URL | RequestOptions,
+        optionsOrCallback as responseHandler
+      );
       break;
     case 3:
       clientRequest = https.request(
