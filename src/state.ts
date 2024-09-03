@@ -84,148 +84,164 @@ type collectionType = {
   [arraysKey]: { [key in arrayKeys]: any[] }
 }
 
-class State {
-  [vars]: collectionType = {
-    [datesKey]: {
-      [recentRequest]: none,
-      [firstRequest]: none,
-      [recentEval]: none,
-    },
-    [flagsKey]: {
-      [blocked]: false,
-    },
-    [arraysKey]: {
-      [queue]: [],
-    },
-    [timeoutsKey]: {
-      [evalInterval]: none,
-      [evalTimeout]: none,
-      [queueInterval]: none,
-      [queueTimeout]: none,
-    },
-    [numsKey]: {
-      [requested]: 0,
-      [expected]: 1,
-      [priorRemaining]: 0,
-      [priorTotal]: 0,
-      [maxPerPeriod]: 100,
-      [secondsPerPeriod]: 60,
-      [secondsPerEval]: Infinity
-    }
-  };
+const vx: collectionType = {
+  [datesKey]: {
+    [recentRequest]: none,
+    [firstRequest]: none,
+    [recentEval]: none,
+  },
+  [flagsKey]: {
+    [blocked]: false,
+  },
+  [arraysKey]: {
+    [queue]: [],
+  },
+  [timeoutsKey]: {
+    [evalInterval]: none,
+    [evalTimeout]: none,
+    [queueInterval]: none,
+    [queueTimeout]: none,
+  },
+  [numsKey]: {
+    [requested]: 0,
+    [expected]: 1,
+    [priorRemaining]: 0,
+    [priorTotal]: 0,
+    [maxPerPeriod]: 100,
+    [secondsPerPeriod]: 60,
+    [secondsPerEval]: Infinity
+  }
+};
 
-  setNum(key: numericKeys, value: number) {
-    this[vars][numsKey][key] = value;
+export const setNum = (key: numericKeys, value: number) => {
+  vx[numsKey][key] = value;
+}
+export const increment = (key: numericKeys) => {
+  vx[numsKey][key]++;
+}
+export const getNum = (key: numericKeys): number => {
+  return vx[numsKey][key];
+}
+export const getDate = (key: dateKeys): Date | undefined => {
+  return vx[datesKey][key];
+}
+export const flagged = (key: booleanKeys): boolean => {
+  return vx[flagsKey][key];
+}
+export const setDate = (key: dateKeys, value: Date | undefined) => {
+  vx[datesKey][key] = value;
+}
+export const setNow = (key: dateKeys) => {
+  setDate(key, new Date());
+}
+export const removeDate = (key: dateKeys) => {
+  setDate(key, none);
+}
+export const setTimer = (key: timeoutKeys, type: timeoutType, callback: Function, ms: number) => {
+  const existing = vx[timeoutsKey][key];
+  if (existing && existing.active) {
+    throw new WebQueueError(replaceActiveTimer(key));
   }
-  increment(key: numericKeys) {
-    this[vars][numsKey][key]++;
+  let timer;
+  if (type === 'interval') {
+    timer = setInterval(callback, ms);
+  } else {
+    timer = setTimeout(callback, ms);
   }
-  getNum(key: numericKeys): number {
-    return this[vars][numsKey][key];
-  }
-  getDate(key: dateKeys): Date | undefined {
-    return this[vars][datesKey][key];
-  }
-  flagged(key: booleanKeys): boolean {
-    return this[vars][flagsKey][key];
-  }
-  setDate(key: dateKeys, value: Date | undefined) {
-    this[vars][datesKey][key] = value;
-  }
-  setNow(key: dateKeys) {
-    this.setDate(key, new Date());
-  }
-  removeDate(key: dateKeys) {
-    this.setDate(key, none);
-  }
-  setTimeout(key: timeoutKeys, type: timeoutType, callback: Function, ms: number) {
-    const existing = this[vars][timeoutsKey][key];
-    if (existing && existing.active) {
-      throw new WebQueueError(replaceActiveTimer(key));
-    }
-    let timer;
-    if (type === 'interval') {
-      timer = setInterval(callback, ms);
-    } else {
-      timer = setTimeout(callback, ms);
-    }
-    this[vars][timeoutsKey][key] = {
-      type,
-      timer,
-      active: true
-    };
-  }
-  clearTimeouts(...keys: timeoutKeys[]) {
-    keys.forEach(key => {
-      const timeout = this[vars][timeoutsKey][key];
-      if (timeout) {
-        if (timeout.type === 'interval') {
-          clearInterval(timeout.timer);
-        } else {
-          clearTimeout(timeout.timer);
-        }
-        timeout.active = false;
+  vx[timeoutsKey][key] = {
+    type,
+    timer,
+    active: true
+  };
+}
+export const clearTimers = (...keys: timeoutKeys[]) => {
+  keys.forEach(key => {
+    const timeout = vx[timeoutsKey][key];
+    if (timeout) {
+      if (timeout.type === 'interval') {
+        clearInterval(timeout.timer);
+      } else {
+        clearTimeout(timeout.timer);
       }
-      this[vars][timeoutsKey][key] = none;
-    })
-  }
-  hasTimeouts(...keys: timeoutKeys[]): boolean {
-    return keys.some(key => this[vars][timeoutsKey][key]);
-  }
-  flag(key: booleanKeys, value: boolean = true) {
-    this[vars][flagsKey][key] = value;
-  }
-  private getArray<T extends arrayType>(key: arrayKeys): T[] {
-    return this[vars][arraysKey][key] as T[];
-  }
-  count<T extends arrayType>(key: arrayKeys) {
-    return this.getArray<T>(key).length;
-  }
-  empty<T extends arrayType>(key: arrayKeys) {
-    return this.getArray<T>(key).length === 0;
-  }
-  append<T extends arrayType>(key: arrayKeys, value: T) {
-    this.getArray(key).push(value);
-  }
-  prepend<T extends arrayType>(key: arrayKeys, value: T) {
-    this.getArray(key).unshift(value);
-  }
-  removeFirst<T extends arrayType>(key: arrayKeys): T | undefined {
-    return this.getArray<T>(key).shift();
-  }
-  removeAll<T extends arrayType>(key: arrayKeys): T[] {
-    return this.getArray<T>(key).splice(0);
-  }
-  reset() {
-    this[vars] = {
-      [datesKey]: {
-        [recentRequest]: none,
-        [firstRequest]: none,
-        [recentEval]: none,
-      },
-      [flagsKey]: {
-        [blocked]: false,
-      },
-      [arraysKey]: {
-        [queue]: [],
-      },
-      [timeoutsKey]: {
-        [evalInterval]: none,
-        [evalTimeout]: none,
-        [queueInterval]: none,
-        [queueTimeout]: none,
-      },
-      [numsKey]: {
-        [requested]: 0,
-        [expected]: 1,
-        [priorRemaining]: 0,
-        [priorTotal]: 0,
-        [maxPerPeriod]: 100,
-        [secondsPerPeriod]: 60,
-        [secondsPerEval]: Infinity
-      }
+      timeout.active = false;
     }
+    vx[timeoutsKey][key] = none;
+  })
+}
+export const hasTimers = (...keys: timeoutKeys[]): boolean => {
+  return keys.some(key => vx[timeoutsKey][key]);
+}
+export const flag = (key: booleanKeys, value: boolean = true) => {
+  vx[flagsKey][key] = value;
+}
+const getArray = <T extends arrayType>(key: arrayKeys): T[] => {
+  return vx[arraysKey][key] as T[];
+}
+export const count = <T extends arrayType>(key: arrayKeys) => {
+  return getArray<T>(key).length;
+}
+export const empty = <T extends arrayType>(key: arrayKeys) => {
+  return getArray<T>(key).length === 0;
+}
+export const append = <T extends arrayType>(key: arrayKeys, value: T) => {
+  getArray(key).push(value);
+}
+export const prepend = <T extends arrayType>(key: arrayKeys, value: T) => {
+  getArray(key).unshift(value);
+}
+export const removeFirst = <T extends arrayType>(key: arrayKeys): T | undefined => {
+  return getArray<T>(key).shift();
+}
+export const removeAll = <T extends arrayType>(key: arrayKeys): T[] => {
+  return getArray<T>(key).splice(0);
+}
+export const reset = () => {
+  vx[datesKey] = {
+    [recentRequest]: none,
+    [firstRequest]: none,
+    [recentEval]: none,
+  };
+  vx[flagsKey] = {
+    [blocked]: false,
+  };
+  vx[arraysKey] = {
+    [queue]: [],
+  };
+  vx[timeoutsKey] = {
+    [evalInterval]: none,
+    [evalTimeout]: none,
+    [queueInterval]: none,
+    [queueTimeout]: none,
+  };
+  vx[numsKey] = {
+    [requested]: 0,
+    [expected]: 1,
+    [priorRemaining]: 0,
+    [priorTotal]: 0,
+    [maxPerPeriod]: 100,
+    [secondsPerPeriod]: 60,
+    [secondsPerEval]: Infinity
   }
 }
 
-export const state = new State();
+export const state = {
+  setNum,
+  increment,
+  getNum,
+  getDate,
+  flagged,
+  setDate,
+  setNow,
+  removeDate,
+  setTimer,
+  clearTimers,
+  hasTimers,
+  flag,
+  count,
+  empty,
+  append,
+  prepend,
+  removeFirst,
+  removeAll,
+  reset
+}

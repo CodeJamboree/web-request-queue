@@ -6,7 +6,7 @@ import { guardOneOrMore } from './utils/guardOneOrMore.js';
 export const setSecondsPerPeriod = (seconds: number) => {
   guardOneOrMore(seconds, 'seconds');
   state.setNum(secondsPerPeriod, seconds);
-  if (state.hasTimeouts(queueInterval, queueTimeout)) {
+  if (state.hasTimers(queueInterval, queueTimeout)) {
     stopQueueTimer();
     startQueueTimer();
   }

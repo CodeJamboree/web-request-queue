@@ -14,16 +14,16 @@ export const mainFlow = async () => {
   const mockCancel2 = mockFn();
 
   state.flag(blocked, false);
-  state.setTimeout(queueTimeout, 'timeout', () => {
+  state.setTimer(queueTimeout, 'timeout', () => {
     console.log(queueTimeout, 'called')
   }, timeoutDelay);
-  state.setTimeout(queueInterval, 'interval', () => {
+  state.setTimer(queueInterval, 'interval', () => {
     console.log(queueInterval, 'called')
   }, timeoutDelay);
-  state.setTimeout(evalTimeout, 'timeout', () => {
+  state.setTimer(evalTimeout, 'timeout', () => {
     console.log(evalTimeout, 'called')
   }, timeoutDelay);
-  state.setTimeout(evalInterval, 'interval', () => {
+  state.setTimer(evalInterval, 'interval', () => {
     console.log(evalInterval, 'called')
   }, timeoutDelay);
   state.append(queue, { args: [url] });
@@ -33,10 +33,10 @@ export const mainFlow = async () => {
   cancelQueuedRequests();
 
   expect(state.flagged(blocked), blocked).is(true);
-  expect(state.hasTimeouts(queueTimeout), queueTimeout).is(false);
-  expect(state.hasTimeouts(queueInterval), queueInterval).is(false);
-  expect(state.hasTimeouts(evalTimeout), evalTimeout).is(false);
-  expect(state.hasTimeouts(evalInterval), evalInterval).is(false);
+  expect(state.hasTimers(queueTimeout), queueTimeout).is(false);
+  expect(state.hasTimers(queueInterval), queueInterval).is(false);
+  expect(state.hasTimers(evalTimeout), evalTimeout).is(false);
+  expect(state.hasTimers(evalInterval), evalInterval).is(false);
   expect(state.count(queue), queue).is(0);
   expect(mockCancel1.wasCalled()).is(true);
   expect(mockCancel2.wasCalled()).is(true);

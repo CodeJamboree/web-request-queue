@@ -4,7 +4,7 @@ import { stopProgressTimer } from './timers/stopProgressTimer.js';
 
 export const setEvaluationSeconds = (seconds: number) => {
   state.setNum(secondsPerEval, seconds);
-  if (state.hasTimeouts(evalInterval, evalTimeout)) {
+  if (state.hasTimers(evalInterval, evalTimeout)) {
     stopProgressTimer();
     startProgressTimer();
   }

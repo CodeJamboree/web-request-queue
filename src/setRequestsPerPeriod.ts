@@ -6,7 +6,7 @@ import { guardOneOrMore } from './utils/guardOneOrMore.js';
 export const setRequestsPerPeriod = (max: number) => {
   guardOneOrMore(max, 'max');
   state.setNum(maxPerPeriod, max);
-  if (state.hasTimeouts(queueInterval, queueTimeout)) {
+  if (state.hasTimers(queueInterval, queueTimeout)) {
     stopQueueTimer();
     startQueueTimer();
   }

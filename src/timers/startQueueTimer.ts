@@ -6,7 +6,7 @@ import { adjustTimeout } from './adjustTimeout.js';
 
 export const startQueueTimer = () => {
   if (
-    state.hasTimeouts(queueInterval, queueTimeout)
+    state.hasTimers(queueInterval, queueTimeout)
   ) return;
 
   const delayMs = delayRequest();
@@ -16,7 +16,7 @@ export const startQueueTimer = () => {
     return;
   }
 
-  state.setTimeout(
+  state.setTimer(
     queueTimeout,
     'timeout',
     delayedStart,
@@ -25,13 +25,13 @@ export const startQueueTimer = () => {
 }
 
 const delayedStart = () => {
-  state.clearTimeouts(queueTimeout);
+  state.clearTimers(queueTimeout);
   startInterval();
 }
 
 const startInterval = () => {
   if (state.empty(queue)) return;
-  state.setTimeout(queueInterval, 'interval',
+  state.setTimer(queueInterval, 'interval',
     handleQueueInterval,
     adjustTimeout(msPerRequest())
   );
