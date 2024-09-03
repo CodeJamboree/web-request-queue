@@ -1,6 +1,7 @@
 import { webRequest } from '../src/index.js';
+import { IncomingMessage } from '../src/types.js';
 
-const callback = (res) => {
+const callback = (res: IncomingMessage) => {
   let total = 0;
   console.log('Status', res.statusCode, res.statusMessage);
 
@@ -20,7 +21,7 @@ const options = {
   method: 'GET'
 }
 
-webRequest.queue(options, callback).then(req => {
+webRequest.queue(options, callback)?.then(req => {
   req.on('error', (err) => console.error(err));
   req.end();
 }).catch(err => {

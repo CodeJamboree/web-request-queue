@@ -34,12 +34,17 @@ const parseParams = (args: queueArgs): promisedQueue => {
 }
 
 const promisify = (args: requestArgs) => {
+  let onRequested: undefined | ((value: PromiseLike<ClientRequest> | ClientRequest) => void) = undefined;
+  let onCancel: undefined | ((reason?: any) => void) = undefined;
+  let promise = new Promise<ClientRequest>((resolve, reject) => {
+    onRequested = resolve;
+    onCancel = reject;
+  });
   const query: promisedQueue = {
     args,
-    promise: new Promise<ClientRequest>((resolve, reject) => {
-      query.onRequested = resolve;
-      query.onCancel = reject;
-    })
+    promise,
+    onRequested,
+    onCancel
   };
   return query;
 }
