@@ -2,37 +2,35 @@ import { expect } from '../../scripts/utils/expect.js';
 import { state } from '../state.js';
 import { delayProgress } from './delayProgress.js';
 
-export const name = 'delayProgress';
-
-export const delayProgressFullDelay = () => {
-  state.set('progressSeconds', 10);
-  state.set('progressedAt', new Date());
+export const fullDelay = () => {
+  state.setNum('progressSeconds', 10);
+  state.setNow('progressedAt');
   expect(delayProgress()).is(10000);
 }
-export const delayProgressOneMs = () => {
+export const oneMs = () => {
   const seconds = 10;
   const ms = seconds * 1000;
-  state.set('progressSeconds', seconds);
+  state.setNum('progressSeconds', seconds);
   const date = new Date();
   date.setTime(date.getTime() - (ms - 1));
-  state.set('progressedAt', date);
+  state.setDate('progressedAt', date);
   expect(delayProgress()).is(1);
 }
-export const delayProgressExpireNow = () => {
+export const expireNow = () => {
   const seconds = 10;
   const ms = seconds * 1000;
-  state.set('progressSeconds', seconds);
+  state.setNum('progressSeconds', seconds);
   const date = new Date();
   date.setTime(date.getTime() - ms);
-  state.set('progressedAt', date);
+  state.setDate('progressedAt', date);
   expect(delayProgress()).is(false);
 }
-export const delayProgressExpire1ms = () => {
+export const expire1ms = () => {
   const seconds = 10;
   const ms = seconds * 1000;
-  state.set('progressSeconds', seconds);
+  state.setNum('progressSeconds', seconds);
   const date = new Date();
   date.setTime(date.getTime() - (ms + 1));
-  state.set('progressedAt', date);
+  state.setDate('progressedAt', date);
   expect(delayProgress()).is(false);
 }

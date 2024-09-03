@@ -5,20 +5,20 @@ import { showProgress } from './showProgress.js';
 import { dateMocker } from '../../scripts/utils/dateMocker.js';
 import { performanceMocker } from "../../scripts/utils/performanceMocker.js";
 
-export const name = 'showProgress';
+const url = new URL("https://localhost");
 
 export const justStarted = () => {
   performanceMocker.set(0);
   dateMocker.setUtc(2000, 0, 1);
   const expectedCount = 200;
   const requestCount = 10;
-  state.set('firstAt', new Date());
+  state.setNow('firstAt');
   setDelay(-1);
-  state.set('requestCount', requestCount);
-  state.set('expectedCount', expectedCount);
-  state.append('queue', 1);
-  state.set('priorRemainingCount', 1);
-  state.set('priorPresumedTotal', expectedCount + 1);
+  state.setNum('requestCount', requestCount);
+  state.setNum('expectedCount', expectedCount);
+  state.append('queue', { args: [url] });
+  state.setNum('priorRemainingCount', 1);
+  state.setNum('priorPresumedTotal', expectedCount + 1);
   showProgress();
   expect(stdout.getBuffer()[0]).equals(
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${expectedCount}\u001b[39m\n`
@@ -110,13 +110,13 @@ export const noChangeSinceLast = () => {
   performanceMocker.set(0);
   const expectedCount = 200;
   const requestCount = 10;
-  state.set('firstAt', new Date());
+  state.setNow('firstAt');
   setDelay(-1);
-  state.set('requestCount', requestCount);
-  state.set('expectedCount', expectedCount);
-  state.append('queue', 1);
-  state.set('priorRemainingCount', expectedCount - requestCount);
-  state.set('priorPresumedTotal', expectedCount);
+  state.setNum('requestCount', requestCount);
+  state.setNum('expectedCount', expectedCount);
+  state.append('queue', { args: [url] });
+  state.setNum('priorRemainingCount', expectedCount - requestCount);
+  state.setNum('priorPresumedTotal', expectedCount);
   showProgress();
   expect(stdout.getBuffer()).equals([]);
 }
@@ -129,13 +129,13 @@ export const withTimeRemaining = () => {
   const msRemaining = "090";
   const firstAt = new Date();
   firstAt.setTime(firstAt.getTime() - msPassed);
-  state.set('firstAt', firstAt);
+  state.setDate('firstAt', firstAt);
   setDelay(-1);
-  state.set('requestCount', requestCount);
-  state.set('expectedCount', expectedCount);
-  state.append('queue', 1);
-  state.set('priorRemainingCount', expectedCount - requestCount);
-  state.set('priorPresumedTotal', 1 + expectedCount);
+  state.setNum('requestCount', requestCount);
+  state.setNum('expectedCount', expectedCount);
+  state.append('queue', { args: [url] });
+  state.setNum('priorRemainingCount', expectedCount - requestCount);
+  state.setNum('priorPresumedTotal', 1 + expectedCount);
   showProgress();
   expect(stdout.getBuffer()).equals([
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${expectedCount}\u001b[39m ~ 0.${msRemaining}s\n`
@@ -150,15 +150,15 @@ export const withPendingMoreThanTotal = () => {
   const msRemaining = "020";
   const firstAt = new Date();
   firstAt.setTime(firstAt.getTime() - msPassed);
-  state.set('firstAt', firstAt);
+  state.setDate('firstAt', firstAt);
   setDelay(-1);
-  state.set('requestCount', requestCount);
-  state.set('expectedCount', expectedCount);
-  state.append('queue', 1);
-  state.append('queue', 1);
+  state.setNum('requestCount', requestCount);
+  state.setNum('expectedCount', expectedCount);
+  state.append('queue', { args: [url] });
+  state.append('queue', { args: [url] });
   const queueCount = 2;
-  state.set('priorRemainingCount', expectedCount - requestCount);
-  state.set('priorPresumedTotal', 1 + expectedCount);
+  state.setNum('priorRemainingCount', expectedCount - requestCount);
+  state.setNum('priorPresumedTotal', 1 + expectedCount);
   showProgress();
   expect(stdout.getBuffer()).equals([
     `Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m of \u001b[33m${requestCount + queueCount}\u001b[39m ~ 0.${msRemaining}s\n`
@@ -171,33 +171,33 @@ export const withoutTotalOrPending = () => {
   const msPassed = 10;
   const firstAt = new Date();
   firstAt.setTime(firstAt.getTime() - msPassed);
-  state.set('firstAt', firstAt);
+  state.setDate('firstAt', firstAt);
   setDelay(-1);
-  state.set('requestCount', requestCount);
-  state.set('expectedCount', expectedCount);
+  state.setNum('requestCount', requestCount);
+  state.setNum('expectedCount', expectedCount);
   state.removeAll('queue');
-  state.set('priorRemainingCount', 999);
-  state.set('priorPresumedTotal', 999);
+  state.setNum('priorRemainingCount', 999);
+  state.setNum('priorPresumedTotal', 999);
   showProgress();
   const [message] = stdout.getBuffer();
   expect(message).equals(`Web Requests: 0ms \u001b[33m${requestCount}\u001b[39m\n`);
 }
-const setDelay = (ms) => {
+const setDelay = (ms: number) => {
   let progressSeconds = 10;
-  state.set('progressSeconds', progressSeconds);
+  state.setNum('progressSeconds', progressSeconds);
   const date = new Date();
   date.setTime(date.getTime() - ((progressSeconds * 1000) - ms));
-  state.set('progressedAt', date);
+  state.setDate('progressedAt', date);
 }
 
-const prepareState = (requested, total) => {
+const prepareState = (requested: number, total: number) => {
   dateMocker.setUtc(2000, 0, 1);
-  state.set('firstAt', new Date());
+  state.setNow('firstAt');
   setDelay(-1);
-  state.set('requestCount', requested);
-  state.set('expectedCount', total);
-  state.append('queue', 1);
-  state.set('priorRemainingCount', 1);
-  state.set('priorPresumedTotal', total + 1);
+  state.setNum('requestCount', requested);
+  state.setNum('expectedCount', total);
+  state.append('queue', { args: [url] });
+  state.setNum('priorRemainingCount', 1);
+  state.setNum('priorPresumedTotal', total + 1);
   showProgress();
 }

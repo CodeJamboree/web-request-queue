@@ -2,9 +2,9 @@ import * as stdout from "../build/scripts/utils/stdout.js";
 import { state } from '../build/src/state.js';
 import { stopTimers } from "../build/src/timers/stopTimers.js";
 import { timeLogger } from '../build/src/progress/timeLogger.js';
-import { dateMocker } from "./utils/dateMocker.js";
+import { dateMocker } from "../build/scripts/utils/dateMocker.js";
 import { httpsMocker } from "../build/scripts/utils/httpsMocker.js";
-import { performanceMocker } from "./utils/performanceMocker.js";
+import { performanceMocker } from "../build/scripts/utils/performanceMocker.js";
 import { ExpectationError } from '../build/scripts/utils/ExpectationError.js';
 
 import { getModules } from './utils/getModules.js';
