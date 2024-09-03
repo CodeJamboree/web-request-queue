@@ -115,6 +115,36 @@ class State {
   removeAll<T extends arrayType>(key: arrayKeys): T[] {
     return this.getArray<T>(key).splice(0);
   }
+  reset() {
+    this.state = {
+      dates: {
+        lastAt: undefined,
+        firstAt: undefined,
+        progressedAt: undefined,
+      },
+      flags: {
+        isBlocked: false,
+      },
+      arrays: {
+        queue: [],
+      },
+      timeouts: {
+        progressIntervalId: undefined,
+        progressTimeoutId: undefined,
+        queueIntervalId: undefined,
+        queueTimeoutId: undefined,
+      },
+      nums: {
+        requestCount: 0,
+        expectedCount: 1,
+        priorRemainingCount: 0,
+        priorPresumedTotal: 0,
+        throttleCount: 100,
+        throttleSeconds: 60,
+        progressSeconds: Infinity
+      }
+    }
+  }
 }
 
 export const state = new State();

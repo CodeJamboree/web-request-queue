@@ -1,4 +1,4 @@
-export const serialize = value => JSON.stringify(value, (key, value) => {
+export const serialize = (value: any) => JSON.stringify(value, (key, value) => {
   if (typeof value === 'object') {
     if (value instanceof Error) return value.message;
     // switch (value?.constructor?.name) {

@@ -1,5 +1,6 @@
 export class ExpectationError extends Error {
-  constructor(message, data) {
+  data: object | undefined = undefined;
+  constructor(message: string, data: any) {
     super(`Failed Expectation: ${message}`);
     if (typeof data === 'object') {
       this.data = data;

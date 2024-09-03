@@ -6,27 +6,28 @@ const stateKey = 'throttleSeconds';
 
 export const oneMs = () => {
   setSecondsPerPeriod(1);
-  expect(state.get(stateKey)).is(1);
+  expect(state.getNum(stateKey)).is(1);
 }
 export const zero = () => {
-  const count = state.get(stateKey);
+  const count = state.getNum(stateKey);
   expect(() => {
     setSecondsPerPeriod(0);
   }).toThrow("Seconds per throttle period must be 1 or more. Got 0.");
-  expect(state.get(stateKey)).is(count);
+  expect(state.getNum(stateKey)).is(count);
 }
 export const infinity = () => {
-  const count = state.get(stateKey);
+  const count = state.getNum(stateKey);
   expect(() => {
     setSecondsPerPeriod(Infinity);
   }).toThrow("Seconds per throttle period must be 1 or more. Got Infinity.");
-  expect(state.get(stateKey)).is(count);
+  expect(state.getNum(stateKey)).is(count);
 }
 
 export const booleanTrue = () => {
-  const count = state.get(stateKey);
+  const count = state.getNum(stateKey);
   expect(() => {
+    // @ts-expect-error
     setSecondsPerPeriod(true);
   }).toThrow("Seconds per throttle period must be 1 or more. Got true.");
-  expect(state.get(stateKey)).is(count);
+  expect(state.getNum(stateKey)).is(count);
 }

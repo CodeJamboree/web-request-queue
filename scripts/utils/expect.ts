@@ -1,10 +1,10 @@
 import { ExpectationError } from './ExpectationError.js';
 import { serialize } from './serialize.js';
 
-export const expect = (actual, details) => {
+export const expect = (actual: any, details?: any) => {
 
   return ({
-    equals: expected => {
+    equals: (expected: any) => {
       const a = serialize(actual);
       const e = serialize(expected);
       if (a !== e) {
@@ -15,38 +15,41 @@ export const expect = (actual, details) => {
       if (typeof actual === 'function') return;
       throw new ExpectationError(`function`, { details, actual });
     },
-    is: expected => {
+    is: (expected: any) => {
       if (actual === expected) return;
       throw new ExpectationError(`same`, { details, expected, actual });
     },
-    lengthOf: expected => {
+    lengthOf: (expected: number) => {
       if (actual.length === expected) return;
       throw new ExpectationError(`length`, { details, expected, actual });
     },
-    startsWith: expected => {
+    startsWith: (expected: string) => {
       if (actual.startsWith(expected)) return;
       throw new ExpectationError(`beginning`, { details, expected, actual });
     },
-    includes: expected => {
+    includes: (expected: any) => {
       if (actual.includes(expected)) return;
       throw new ExpectationError(`including`, { details, expected, actual });
     },
-    endsWith: expected => {
+    endsWith: (expected: string) => {
       if (actual.endsWith(expected)) return;
       throw new ExpectationError(`ending`, { details, expected, actual });
     },
-    toThrow: error => {
+    toThrow: (error?: Error | string) => {
       let thrown = true;
       try {
         actual();
         thrown = false;
       } catch (e) {
-        expect(e, details).equals(error);
+        thrown = true;
+        if (typeof error !== 'undefined') {
+          expect(e, details).equals(error);
+        }
       }
       if (!thrown)
         throw new ExpectationError(`throws`, { details, error, actual })
     },
-    instanceOf: expected => {
+    instanceOf: (expected: any | Function | string) => {
       if (typeof actual !== 'object') {
         throw new ExpectationError('instanceOf', {
           details,

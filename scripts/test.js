@@ -1,17 +1,18 @@
 import * as stdout from "./utils/stdout.js";
-import { state } from '../build/state.js';
-import { stopTimers } from "../build/timers/stopTimers.js";
-import { timeLogger } from '../build/progress/timeLogger.js';
+import { state } from '../build/src/state.js';
+import { stopTimers } from "../build/src/timers/stopTimers.js";
+import { timeLogger } from '../build/src/progress/timeLogger.js';
 import { dateMocker } from "./utils/dateMocker.js";
 import { httpsMocker } from "./utils/httpsMocker.js";
 import { performanceMocker } from "./utils/performanceMocker.js";
-import { ExpectationError } from './utils/ExpectationError.js';
+import { ExpectationError } from '../build/scripts/utils/ExpectationError.js';
 
 import { getModules } from './utils/getModules.js';
 const excess = 10;
 
 const main = async () => {
-  const suites = await getModules('build', /\.test\.js$/, '');
+  const suites = await getModules('build/src', /\.test\.js$/, '');
+
   const state = {
     passed: 0,
     failed: 0,
