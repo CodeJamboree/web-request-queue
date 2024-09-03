@@ -1,12 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 
-export const getModules = async (dir, pattern, replacement) => {
+export type Module = Record<string, Function>;
+export type ModuleList = {
+  [key: string]: ModuleList | Module
+}
+
+export const getModules = async (dir: string, pattern: RegExp, replacement: string): Promise<ModuleList | undefined> => {
   if (!fs.existsSync(dir)) return;
   const files = fs.readdirSync(dir);
   if (files.length === 0) return;
 
-  const modules = {};
+  const modules: ModuleList = {};
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
@@ -24,6 +29,7 @@ export const getModules = async (dir, pattern, replacement) => {
       }
     }
   }
-  if (Object.keys(modules) === 0) return;
+
+  if (Object.keys(modules).length === 0) return;
   return modules;
 }

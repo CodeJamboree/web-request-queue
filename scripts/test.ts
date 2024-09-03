@@ -1,40 +1,49 @@
-import * as stdout from "../build/scripts/utils/stdout.js";
-import { state } from '../build/src/state.js';
-import { stopTimers } from "../build/src/timers/stopTimers.js";
-import { timeLogger } from '../build/src/progress/timeLogger.js';
-import { dateMocker } from "../build/scripts/utils/dateMocker.js";
-import { httpsMocker } from "../build/scripts/utils/httpsMocker.js";
-import { performanceMocker } from "../build/scripts/utils/performanceMocker.js";
-import { ExpectationError } from '../build/scripts/utils/ExpectationError.js';
+import * as stdout from "./utils/stdout.js";
+import { state } from '../src/state.js';
+import { stopTimers } from "../src/timers/stopTimers.js";
+import { timeLogger } from '../src/progress/timeLogger.js';
+import { dateMocker } from "./utils/dateMocker.js";
+import { httpsMocker } from "./utils/httpsMocker.js";
+import { performanceMocker } from "./utils/performanceMocker.js";
+import { ExpectationError } from './utils/ExpectationError.js';
 
-import { getModules } from './utils/getModules.js';
+import { getModules, ModuleList, Module } from './utils/getModules.js';
 const excess = 10;
+
+interface testState {
+  passed: number,
+  failed: number,
+  skipped: number,
+  failures: string[],
+  hidePassing: boolean
+}
 
 const main = async () => {
   const suites = await getModules('build/src', /\.test\.js$/, '');
 
-  const state = {
+  const state: testState = {
     passed: 0,
     failed: 0,
     skipped: 0,
     failures: [],
-    hidePassing: true
+    hidePassing: false
   }
   beforeAll();
 
-  await runSuites(suites, state);
+  if (suites !== undefined)
+    await runSuites(suites, state);
 
   afterAll();
   summarizeTests(state);
 }
 
-const runSuites = async (suites, state, depth = 0, location = '') => {
+const runSuites = async (suites: ModuleList | Module, state: testState, depth = 0, location = '') => {
   const keys = Object.keys(suites);
   const indent = depth === 0 ? '' : ' '.repeat(depth);
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
     if (key.startsWith("x_")) {
-      console.info(`${indent}skipped ${key}`);
+      console.info(`${indent}skip ${key}`);
       state.skipped++;
       continue;
     }
@@ -43,9 +52,9 @@ const runSuites = async (suites, state, depth = 0, location = '') => {
     const suite = suites[key];
     const suiteLocation = location === '' ? key : `${location}/${key}`;
 
-    const tests = Object.entries(suite).filter(([name, test]) => typeof test === 'function');
+    const tests = Object.entries(suite as Module).filter(([_name, test]) => typeof test === 'function');
     if (tests.length === 0) {
-      await runSuites(suite, state, depth + 1, suiteLocation);
+      await runSuites(suite as ModuleList, state, depth + 1, suiteLocation);
     } else {
       for (let i = 0; i < tests.length; i++) {
         await runTest(tests[i], i, tests, state, depth + 1, suiteLocation);
@@ -81,7 +90,7 @@ const afterEach = () => {
   httpsMocker.restore();
   stdout.showOutput();
 }
-const runTest = async ([name, test], i, a, state, depth, location) => {
+const runTest = async ([name, test]: [string, Function], i: number, a: any[], state: testState, depth: number, location: string) => {
   const indent = ' '.repeat(depth);
   if (name.startsWith('x_')) {
     state.skipped++;
@@ -114,10 +123,12 @@ const runTest = async ([name, test], i, a, state, depth, location) => {
     if ((e instanceof ExpectationError) && e.data) {
       writeExpectationData(e.data);
     }
-    console.debug(e.stack);
+    if (e instanceof Error) {
+      console.debug(e.stack);
+    }
   }
 }
-const summarizeTests = (state) => {
+const summarizeTests = (state: testState) => {
   const {
     passed,
     failed,
@@ -147,7 +158,7 @@ const summarizeTests = (state) => {
   }
   console.debug('Total:', passed + failed + skipped);
 }
-const writeExpectationData = data => {
+const writeExpectationData = (data: Record<string, any>) => {
   Object.keys(data).forEach(key => {
     switch (key) {
       case 'expected':
