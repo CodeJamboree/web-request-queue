@@ -1,12 +1,14 @@
 import https from 'https';
+import http from 'http';
 
+type handler = [name: string, handler: Function];
 const original = {
   request: https.request.bind(https)
 }
 
-const calls = [];
-const requestHandlers = [];
-const responseHandlers = [];
+const calls: any[][] = [];
+const requestHandlers: handler[] = [];
+const responseHandlers: handler[] = [];
 
 const resetHandlers = () => {
   calls.length = 0;
@@ -14,33 +16,44 @@ const resetHandlers = () => {
   responseHandlers.length = 0;
 }
 
-const emitRequest = (event, ...args) => {
+const emitRequest = (event: string, ...args: any[]) => {
   requestHandlers.forEach(([name, handler]) => {
     if (name === event) handler(...args);
   });
 }
-const emitResponse = (event, ...args) => {
+const emitResponse = (event: string, ...args: any[]) => {
   responseHandlers.forEach(([name, handler]) => {
     if (name === event) handler(...args);
   });
 }
 class MockRequest {
-  on(event, cb) {
+  on(event: string, cb: Function) {
     requestHandlers.push([event, cb])
   }
 }
 class MockResponse {
   statusCode = 200;
   statusMessage = 'OK';
-  on(event, cb) {
+  on(event: string, cb: Function) {
     responseHandlers.push([event, cb])
   }
 }
-const simpleRequest = (...args) => {
+const simpleRequest = (...args: any[]) => {
+  let callback: undefined | ((res: http.IncomingMessage | MockResponse) => void) = undefined;
+  switch (args.length) {
+    case 2:
+      if (typeof args[1] === 'function') callback = args[1];
+      break;
+    case 3:
+      callback = args[2];
+      break;
+    default:
+      break;
+  }
   calls.push(args);
   const response = new MockResponse();
   const request = new MockRequest();
-  const callback = args[args.length - 1];
+
   if (typeof callback === 'function') {
     callback(response);
   }
@@ -49,13 +62,14 @@ const simpleRequest = (...args) => {
 
 const mock = () => {
   resetHandlers();
+  // @ts-expect-error
   https.request = simpleRequest;
 }
 const restore = () => {
   https.request = original.request;
 }
 const called = () => calls.length > 0;
-const callAt = (index) => calls[index];
+const callAt = (index: number) => calls[index];
 const lastCall = () => calls[calls.length - 1];
 
 export const httpsMocker = {

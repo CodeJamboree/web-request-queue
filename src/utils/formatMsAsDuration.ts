@@ -31,7 +31,7 @@ export const formatMsAsDuration = (ms: any) => {
   if (ms === -Infinity) return 'never';
   if (ms > Number.MAX_SAFE_INTEGER) return 'distant future';
   if (ms <= Number.MIN_SAFE_INTEGER) return 'distant past';
-  if (typeof ms === 'number' && !isNaN(ms)) return;
+  if (typeof ms === 'number' && isNaN(ms)) return;
   if (typeof ms !== 'number') return;
 
   let signed = false;
