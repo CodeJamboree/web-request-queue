@@ -20,10 +20,10 @@ type evalTimeout = 'evalTimeout';
 type queueInterval = 'queueInterval';
 type queueTimeout = 'queueTimeout';
 
-type timeoutKeys = evalInterval |
-  evalTimeout |
-  queueInterval |
-  queueTimeout;
+type timeoutKeys = evalTimeout | queueTimeout;
+type intervalKeys = evalInterval | queueInterval;
+
+type timerKeys = timeoutKeys | intervalKeys;
 
 export const evalInterval: evalInterval = 'evalInterval';
 export const evalTimeout: evalTimeout = 'evalTimeout';
@@ -69,16 +69,15 @@ const flagsKey = 'flags';
 const numsKey = 'nums';
 const arraysKey = 'arrays';
 
-type timeoutType = 'interval' | 'timeout';
 interface timeout {
   timer: NodeJS.Timeout | number | undefined,
-  type: timeoutType,
+  interval: boolean,
   active: boolean
 }
 
 type collectionType = {
   [datesKey]: { [key in dateKeys]: Date | undefined },
-  [timeoutsKey]: { [key in timeoutKeys]: timeout | undefined },
+  [timeoutsKey]: { [key in timerKeys]: timeout | undefined },
   [flagsKey]: { [key in booleanKeys]: boolean },
   [numsKey]: { [key in numericKeys]: number },
   [arraysKey]: { [key in arrayKeys]: any[] }
@@ -137,38 +136,44 @@ export const setNow = (key: dateKeys) => {
 export const removeDate = (key: dateKeys) => {
   setDate(key, none);
 }
-export const setTimer = (key: timeoutKeys, type: timeoutType, callback: Function, ms: number) => {
+export const startInterval = (key: intervalKeys, callback: Function, ms: number) => {
+  setTimer(key, true, callback, ms);
+}
+export const startTimeout = (key: timeoutKeys, callback: Function, ms: number) => {
+  setTimer(key, false, callback, ms);
+}
+const setTimer = (key: timerKeys, interval: boolean, callback: Function, ms: number) => {
   const existing = vx[timeoutsKey][key];
   if (existing && existing.active) {
     throw new WebQueueError(replaceActiveTimer(key));
   }
   let timer;
-  if (type === 'interval') {
+  if (interval) {
     timer = setInterval(callback, ms);
   } else {
     timer = setTimeout(callback, ms);
   }
   vx[timeoutsKey][key] = {
-    type,
     timer,
+    interval,
     active: true
   };
 }
-export const clearTimers = (...keys: timeoutKeys[]) => {
+export const clearTimers = (...keys: timerKeys[]) => {
   keys.forEach(key => {
-    const timeout = vx[timeoutsKey][key];
-    if (timeout) {
-      if (timeout.type === 'interval') {
-        clearInterval(timeout.timer);
+    const timer = vx[timeoutsKey][key];
+    if (timer) {
+      if (timer.interval) {
+        clearInterval(timer.timer);
       } else {
-        clearTimeout(timeout.timer);
+        clearTimeout(timer.timer);
       }
-      timeout.active = false;
+      timer.active = false;
     }
     vx[timeoutsKey][key] = none;
   })
 }
-export const hasTimers = (...keys: timeoutKeys[]): boolean => {
+export const hasTimers = (...keys: timerKeys[]): boolean => {
   return keys.some(key => vx[timeoutsKey][key]);
 }
 export const flag = (key: booleanKeys, value: boolean = true) => {
@@ -233,7 +238,8 @@ export const state = {
   setDate,
   setNow,
   removeDate,
-  setTimer,
+  startInterval,
+  startTimeout,
   clearTimers,
   hasTimers,
   flag,

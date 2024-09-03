@@ -14,16 +14,16 @@ export const mainFlow = async () => {
   const mockCancel2 = mockFn();
 
   state.flag(blocked, false);
-  state.setTimer(queueTimeout, 'timeout', () => {
+  state.startTimeout(queueTimeout, () => {
     console.log(queueTimeout, 'called')
   }, timeoutDelay);
-  state.setTimer(queueInterval, 'interval', () => {
+  state.startInterval(queueInterval, () => {
     console.log(queueInterval, 'called')
   }, timeoutDelay);
-  state.setTimer(evalTimeout, 'timeout', () => {
+  state.startTimeout(evalTimeout, () => {
     console.log(evalTimeout, 'called')
   }, timeoutDelay);
-  state.setTimer(evalInterval, 'interval', () => {
+  state.startInterval(evalInterval, () => {
     console.log(evalInterval, 'called')
   }, timeoutDelay);
   state.append(queue, { args: [url] });

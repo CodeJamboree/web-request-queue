@@ -15,7 +15,7 @@ export const startProgressTimer = () => {
     return;
   }
 
-  state.setTimer(evalTimeout, 'timeout',
+  state.startTimeout(evalTimeout,
     delay,
     adjustTimeout(delayMs)
   );
@@ -28,7 +28,7 @@ const delay = () => {
 
 const startInterval = () => {
   if (state.empty(queue)) return;
-  state.setTimer(evalInterval, 'interval',
+  state.startInterval(evalInterval,
     handleProgressInterval,
     adjustTimeout(msPerProgress())
   );

@@ -16,9 +16,8 @@ export const startQueueTimer = () => {
     return;
   }
 
-  state.setTimer(
+  state.startTimeout(
     queueTimeout,
-    'timeout',
     delayedStart,
     adjustTimeout(delayMs)
   );
@@ -31,7 +30,7 @@ const delayedStart = () => {
 
 const startInterval = () => {
   if (state.empty(queue)) return;
-  state.setTimer(queueInterval, 'interval',
+  state.startInterval(queueInterval,
     handleQueueInterval,
     adjustTimeout(msPerRequest())
   );
