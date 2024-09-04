@@ -3,7 +3,7 @@ import { expect } from '../../scripts/utils/expect.js';
 import { state, recentRequest, maxPerPeriod, secondsPerPeriod } from '../state.js';
 import { httpsMocker } from "../../scripts/utils/httpsMocker.js";
 import { mockFn } from "../../scripts/utils/mockFn.js";
-import { RequestOptions, requestArgs } from '../types.js';
+import { requestArgs, RequestOptions, responseCallback } from '../global.js';
 
 const setupDelay = (isDelayed = true) => {
 
@@ -68,7 +68,14 @@ export const callbackForResponse = () => {
 
 export const callbackForRequest = () => {
   setupDelay(false);
-  const args: requestArgs = [{}];
+  const args: [
+    options: RequestOptions | string | URL,
+    callback?: responseCallback
+  ] | [
+    url: string | URL,
+    options: RequestOptions,
+    callback?: responseCallback
+  ] = [{}];
   const onRequested = mockFn();
   const onCancel = undefined;
   makeRequest({ args, onRequested, onCancel })

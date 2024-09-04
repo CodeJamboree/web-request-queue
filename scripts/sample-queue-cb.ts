@@ -1,7 +1,7 @@
 import { webRequest } from '../src/index.js';
-import { ClientRequest, IncomingMessage, RequestOptions } from '../src/types.js';
+import { requestCallback, RequestOptions, responseCallback } from '../src/global.js';
 
-const callback = (res: IncomingMessage) => {
+const callback: responseCallback = res => {
   let total = 0;
   console.log('Status', res.statusCode, res.statusMessage);
 
@@ -16,7 +16,7 @@ const callback = (res: IncomingMessage) => {
     console.error('Response Error', err);
   });
 }
-const onRequested = (req: ClientRequest) => {
+const onRequested: requestCallback = req => {
   req.on('error', (e) => {
     console.error('Request Error', e);
   });
@@ -31,7 +31,7 @@ const options: RequestOptions = {
   method: 'GET'
 }
 
-webRequest.queue({
+webRequest.queueSync({
   args: [options, callback],
   onRequested,
   onCancel: (err: Error) => {

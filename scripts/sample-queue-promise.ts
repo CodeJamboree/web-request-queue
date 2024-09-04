@@ -1,7 +1,7 @@
 import { webRequest } from '../src/index.js';
-import { IncomingMessage } from '../src/types.js';
+import { responseCallback } from '../src/global.js';
 
-const callback = (res: IncomingMessage) => {
+const callback: responseCallback = (res) => {
   let total = 0;
   console.log('Status', res.statusCode, res.statusMessage);
 
@@ -22,7 +22,7 @@ const options = {
 }
 
 webRequest.queue(options, callback)?.then(req => {
-  req.on('error', (err) => console.error(err));
+  req.on('error', (err: any) => console.error(err));
   req.end();
 }).catch(err => {
   console.error('catch', err);

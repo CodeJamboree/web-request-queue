@@ -1,5 +1,5 @@
 import https from 'https';
-import http from 'http';
+import { ClientRequest, IncomingMessage, responseCallback } from '../../src/global';
 
 type handler = [name: string, handler: Function];
 const original = {
@@ -38,8 +38,8 @@ class MockResponse {
     responseHandlers.push([event, cb])
   }
 }
-const simpleRequest = (...args: any[]) => {
-  let callback: undefined | ((res: http.IncomingMessage | MockResponse) => void) = undefined;
+const simpleRequest = (...args: any[]): ClientRequest => {
+  let callback: responseCallback | undefined;
   switch (args.length) {
     case 2:
       if (typeof args[1] === 'function') callback = args[1];
@@ -51,8 +51,8 @@ const simpleRequest = (...args: any[]) => {
       break;
   }
   calls.push(args);
-  const response = new MockResponse();
-  const request = new MockRequest();
+  const response = new MockResponse() as IncomingMessage;
+  const request = new MockRequest() as ClientRequest;
 
   if (typeof callback === 'function') {
     callback(response);
@@ -62,7 +62,6 @@ const simpleRequest = (...args: any[]) => {
 
 const mock = () => {
   resetHandlers();
-  // @ts-expect-error
   https.request = simpleRequest;
 }
 const restore = () => {

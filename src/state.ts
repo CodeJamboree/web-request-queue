@@ -1,9 +1,7 @@
 import { replaceActiveTimer } from "./locale.js";
-import { queueParams } from "./types.js";
 import { WebQueueError } from './WebQueueError.js';
+import { queueParams } from "./global.js";
 
-type vars = 'state';
-const vars: vars = 'state';
 const none = undefined;
 
 type recentRequest = 'recentRequest';
@@ -48,11 +46,6 @@ export const maxPerPeriod: maxPerPeriod = 'maxPerPeriod';
 export const secondsPerPeriod: secondsPerPeriod = 'secondsPerPeriod';
 
 type arrayType = queueParams;
-const datesKey = 'dates';
-const timeoutsKey = 'timeouts';
-const flagsKey = 'flags';
-const numsKey = 'nums';
-const arraysKey = 'arrays';
 
 const timerKey = 'id';
 const intervalKey = 'interval';
@@ -62,54 +55,50 @@ interface timeout {
   [intervalKey]: boolean
 }
 
-type collectionType = {
-  [datesKey]: { [key in dateKeys]: Date | undefined },
-  [timeoutsKey]: { [key in timerKeys]: timeout | undefined },
-  [flagsKey]: { [key in booleanKeys]: boolean },
-  [numsKey]: { [key in numericKeys]: number },
-  [arraysKey]: { [key in arrayKeys]: any[] }
-}
+type dateCollection = { [key in dateKeys]: Date | undefined };
+type timeoutsCollection = { [key in timerKeys]: timeout | undefined };
+type flagsCollection = { [key in booleanKeys]: boolean };
+type numsCollection = { [key in numericKeys]: number };
+type arraysCollection = { [key in arrayKeys]: any[] };
 
-const vx: collectionType = {
-  [datesKey]: {
-    [recentRequest]: none,
-    [firstRequest]: none
-  },
-  [flagsKey]: {
-    [blocked]: false,
-  },
-  [arraysKey]: {
-    [queue]: [],
-  },
-  [timeoutsKey]: {
-    [queueInterval]: none,
-    [queueTimeout]: none,
-  },
-  [numsKey]: {
-    [requested]: 0,
-    [expected]: 1,
-    [maxPerPeriod]: 100,
-    [secondsPerPeriod]: 60
-  }
+let dates: dateCollection = {
+  [recentRequest]: none,
+  [firstRequest]: none
+};
+let flags: flagsCollection = {
+  [blocked]: false,
+}
+let arrays: arraysCollection = {
+  [queue]: [],
+};
+let timeouts: timeoutsCollection = {
+  [queueInterval]: none,
+  [queueTimeout]: none,
+}
+let nums: numsCollection = {
+  [requested]: 0,
+  [expected]: 1,
+  [maxPerPeriod]: 100,
+  [secondsPerPeriod]: 60
 };
 
 export const setNum = (key: numericKeys, value: number) => {
-  vx[numsKey][key] = value;
+  nums[key] = value;
 }
 export const increment = (key: numericKeys) => {
-  vx[numsKey][key]++;
+  nums[key]++;
 }
 export const getNum = (key: numericKeys): number => {
-  return vx[numsKey][key];
+  return nums[key];
 }
 export const getDate = (key: dateKeys): Date | undefined => {
-  return vx[datesKey][key];
+  return dates[key];
 }
 export const flagged = (key: booleanKeys): boolean => {
-  return vx[flagsKey][key];
+  return flags[key];
 }
 export const setDate = (key: dateKeys, value: Date | undefined) => {
-  vx[datesKey][key] = value;
+  dates[key] = value;
 }
 export const setNow = (key: dateKeys) => {
   setDate(key, new Date());
@@ -124,7 +113,7 @@ export const startTimeout = (key: timeoutKeys, callback: Function, ms: number) =
   setTimer(key, false, callback, ms);
 }
 const setTimer = (key: timerKeys, interval: boolean, callback: Function, ms: number) => {
-  const existing = vx[timeoutsKey][key];
+  const existing = timeouts[key];
   if (existing) {
     throw new WebQueueError(replaceActiveTimer(key));
   }
@@ -134,7 +123,7 @@ const setTimer = (key: timerKeys, interval: boolean, callback: Function, ms: num
   } else {
     timer = setTimeout(callback, ms);
   }
-  vx[timeoutsKey][key] = {
+  timeouts[key] = {
     [timerKey]: timer,
     [intervalKey]: interval
   };
@@ -142,7 +131,7 @@ const setTimer = (key: timerKeys, interval: boolean, callback: Function, ms: num
 export const clearTimers = (...keys: timerKeys[]) => {
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
-    const timer = vx[timeoutsKey][key];
+    const timer = timeouts[key];
     if (timer) {
       const intervalId = timer[timerKey];
       if (timer[intervalKey]) {
@@ -150,18 +139,18 @@ export const clearTimers = (...keys: timerKeys[]) => {
       } else {
         clearTimeout(intervalId);
       }
-      vx[timeoutsKey][key] = none;
+      timeouts[key] = none;
     }
   }
 }
 export const hasTimers = (...keys: timerKeys[]): boolean => {
-  return keys.some(key => vx[timeoutsKey][key]);
+  return keys.some(key => timeouts[key]);
 }
 export const flag = (key: booleanKeys, value: boolean = true) => {
-  vx[flagsKey][key] = value;
+  flags[key] = value;
 }
 const getArray = <T extends arrayType>(key: arrayKeys): T[] => {
-  return vx[arraysKey][key] as T[];
+  return arrays[key] as T[];
 }
 export const count = <T extends arrayType>(key: arrayKeys) => {
   return getArray<T>(key).length;
@@ -182,21 +171,21 @@ export const removeAll = <T extends arrayType>(key: arrayKeys): T[] => {
   return getArray<T>(key).splice(0);
 }
 export const reset = () => {
-  vx[datesKey] = {
+  dates = {
     [recentRequest]: none,
     [firstRequest]: none
   };
-  vx[flagsKey] = {
+  flags = {
     [blocked]: false,
   };
-  vx[arraysKey] = {
+  arrays = {
     [queue]: [],
   };
-  vx[timeoutsKey] = {
+  timeouts = {
     [queueInterval]: none,
     [queueTimeout]: none,
   };
-  vx[numsKey] = {
+  nums = {
     [requested]: 0,
     [expected]: 1,
     [maxPerPeriod]: 100,

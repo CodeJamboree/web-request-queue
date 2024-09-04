@@ -2,8 +2,8 @@ import { handleResponseEnd } from "./handleResponseEnd.js";
 import { mockFn } from '../../scripts/utils/mockFn.js';
 import { expect } from '../../scripts/utils/expect.js';
 import { queue, state } from '../state.js';
-import { IncomingMessage } from "../types.js";
 import { cascadingCancelation, responseStatus } from "../locale.js";
+import { IncomingMessage } from '../global.js';
 
 const url = new URL('https://localhost');
 
@@ -53,5 +53,5 @@ const mockResponse = (statusCode: number, statusMessage: string): IncomingMessag
     statusMessage,
     on: () => response
   };
-  return response;
+  return response as unknown as IncomingMessage;
 }

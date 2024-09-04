@@ -1,8 +1,9 @@
+import http from 'http';
 import { handleResponse } from "./handleResponse.js";
 import { mockFn } from '../../scripts/utils/mockFn.js';
 import { expect } from '../../scripts/utils/expect.js';
-import { cancelHandler, IncomingMessage } from "../types.js";
 import { responseStatus } from "../locale.js";
+import { IncomingMessage } from '../global.js';
 
 export const barbones = () => {
   const callback = undefined;
@@ -101,7 +102,7 @@ export const badCodeDefaultMessage = () => {
   setupResponseEnd(500, undefined, mockCancel);
   expect(mockCancel.lastCallArg()).is(responseStatus(500, undefined));
 }
-const setupResponseEnd = (code: number | undefined, message: string | undefined, onCancel: cancelHandler) => {
+const setupResponseEnd = (code: number | undefined, message: string | undefined, onCancel: Function) => {
   const callback = undefined;
   const handlers: [string, Function][] = [];
   const response = mockResponse((name: string, fn: Function) => {
@@ -115,7 +116,7 @@ const setupResponseEnd = (code: number | undefined, message: string | undefined,
     if (name === 'end') fn();
   });
 }
-const setupResponseError = (error: any, onCancel: cancelHandler) => {
+const setupResponseError = (error: any, onCancel: Function) => {
   const callback = undefined;
   const handlers: [string, Function][] = [];
   const response = mockResponse((name: string, fn: Function) => {
@@ -155,5 +156,5 @@ const mockResponse = (onFunction?: Function): IncomingMessage => {
       return response;
     }
   };
-  return response;
+  return response as IncomingMessage;
 }

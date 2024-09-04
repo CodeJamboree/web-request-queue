@@ -1,6 +1,5 @@
 import { webRequest } from '../src/index.js';
-import { ClientRequest, IncomingMessage } from '../src/types.js';
-import { __assign } from 'tslib';
+import { ClientRequest, requestCallback, responseCallback } from '../src/global.js';
 
 const label = 'Queue';
 console.time(label);
@@ -17,7 +16,7 @@ webRequest.configure({
 const handleRequest = async (req: ClientRequest) => new Promise<Buffer>((resolve, reject) => {
   let buffer: Buffer;
   const handleEnd = () => resolve(buffer);
-  const handleResponse = (res: IncomingMessage) => {
+  const handleResponse: responseCallback = (res) => {
     if (buffer) return;
     buffer = Buffer.alloc(0);
     res.on('error', reject);
@@ -43,8 +42,8 @@ const all: Promise<Buffer>[] = [];
 for (let i = 0; i < 3; i++) {
   const queued = webRequest
     .queue(`https://github.com/CodeJamboree/?${i}`)
-    ?.then(handleRequest);
-  if (queued) all.push(queued);
+    .then(handleRequest);
+  all.push(queued);
 }
 
 Promise.all(all)

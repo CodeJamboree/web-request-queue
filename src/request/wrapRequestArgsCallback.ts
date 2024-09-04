@@ -1,10 +1,11 @@
+import https from 'https';
 import { handleResponse } from './handleResponse.js';
-import { cancelHandler, requestArgs, RequestOptions } from '../types.js';
 import { WebQueueError } from '../WebQueueError.js';
 import { outOfRange } from '../locale.js';
 import { isFunction } from '../utils/isFunction.js';
+import { requestArgs } from '../global.js';
 
-export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, requestArgs: requestArgs): requestArgs => {
+export const wrapRequestArgsCallback = (onCancel: Function | undefined, requestArgs: requestArgs): requestArgs => {
 
   const count = requestArgs.length;
   const [urlOrOptions, optionsOrCallback, callback] = requestArgs;
@@ -27,14 +28,14 @@ export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, req
       } else {
         return [
           urlOrOptions as string | URL,
-          optionsOrCallback as RequestOptions,
+          optionsOrCallback as https.RequestOptions,
           handleResponse(undefined, onCancel)
         ];
       }
     case 3:
       return [
         urlOrOptions as string | URL,
-        optionsOrCallback as RequestOptions,
+        optionsOrCallback as https.RequestOptions,
         handleResponse(callback, onCancel)
       ];
     default:

@@ -1,9 +1,9 @@
 import { cancelQueuedRequests } from './cancelQueuedRequests.js';
-import { cancelHandler, ClientRequest } from '../types.js';
 import { cascadingCancelation } from '../locale.js';
 import { invoke } from '../utils/invoke.js';
+import { ClientRequest } from '../global.js';
 
-export const handleRequestError = (_request: ClientRequest, onCancel: cancelHandler | undefined) => (error: Error) => {
+export const handleRequestError = (_request: ClientRequest, onCancel: Function | undefined) => (error: Error) => {
   try {
     invoke(onCancel, error);
   } catch (e) {

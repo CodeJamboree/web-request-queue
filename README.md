@@ -44,7 +44,7 @@ const onRequested = req => {
   req.write("Posted form data");
   req.end();
 }
-webRequest.queue({
+webRequest.queueSync({
   args: [url, {method: 'POST'}, callback],
   onRequested
 });
@@ -55,7 +55,7 @@ To cancel all requests currently in the queue, call the method
 
 ```js
 const onCancel = err => console.log(err);
-webRequest.queue({args: ["https://localhost"], onCancel});
+webRequest.queueSync({args: ["https://localhost"], onCancel});
 webRequest.cancel("I have my reasons");
 // Output: I have my reasons
 ```

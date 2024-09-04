@@ -1,7 +1,8 @@
 import { state, queue } from '../state.js';
 import { stopTimers } from '../timers/stopTimers.js';
-import { queueParams } from '../types.js';
 import { invoke } from '../utils/invoke.js';
+import { queueParams } from '../global.js';
+
 const cancelKey = 'onCancel';
 export const cancelQueuedRequests = (reason?: any) => {
   stopTimers();

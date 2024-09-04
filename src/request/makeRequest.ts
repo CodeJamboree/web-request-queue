@@ -3,10 +3,10 @@ import { delayRequest } from './delayRequest.js';
 import { beforeRequest } from './beforeRequest.js';
 import { wrapRequestArgsCallback } from './wrapRequestArgsCallback.js';
 import { handleRequestError } from './handleRequestError.js';
-import { queueParams, RequestOptions, responseHandler } from '../types.js';
 import { WebQueueError } from '../WebQueueError.js';
 import { outOfRange } from '../locale.js';
 import { invoke } from '../utils/invoke.js';
+import { queueParams, RequestOptions, responseCallback } from '../global.js';
 
 export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
 
@@ -24,7 +24,7 @@ export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
     case 2:
       clientRequest = https.request(
         urlOrOptions as string | URL | RequestOptions,
-        optionsOrCallback as responseHandler
+        optionsOrCallback as responseCallback
       );
       break;
     case 3:
