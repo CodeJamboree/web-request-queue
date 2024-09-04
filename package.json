@@ -11,6 +11,9 @@
   "types": "./dist/index.d.ts",
   "typesVersions": {
     "*": {
+      ".": [
+        "./dist/index.d.ts"
+      ],
       "production": [
         "./dist/index.d.ts"
       ],
