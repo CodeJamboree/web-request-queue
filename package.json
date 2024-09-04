@@ -2,7 +2,12 @@
   "name": "@codejamboree/web-request-queue",
   "version": "1.0.0",
   "description": "Throttle web requests",
-  "main": "src/index.js",
+  "main": "dist/bundle.min.js",
+  "exports": {
+    ".": "./dist/bundle.min.js",
+    "./production": "./dist/bundle.min.js",
+    "./development": "./dist/bundle.js"
+  },
   "type": "module",
   "scripts": {
     "build": "tsc",
