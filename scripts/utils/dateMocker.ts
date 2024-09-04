@@ -1,7 +1,6 @@
 const OriginalDate = Date;
 
 type dateArgs = [] |
-[vd: VarDate] |
 [value: number | string | Date] |
 [year: number, monthIndex?: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number]
 

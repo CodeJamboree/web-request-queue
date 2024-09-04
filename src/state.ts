@@ -106,13 +106,13 @@ export const setNow = (key: dateKeys) => {
 export const removeDate = (key: dateKeys) => {
   setDate(key, none);
 }
-export const startInterval = (key: intervalKeys, callback: Function, ms: number) => {
+export const startInterval = (key: intervalKeys, callback: () => void, ms: number) => {
   setTimer(key, true, callback, ms);
 }
-export const startTimeout = (key: timeoutKeys, callback: Function, ms: number) => {
+export const startTimeout = (key: timeoutKeys, callback: () => void, ms: number) => {
   setTimer(key, false, callback, ms);
 }
-const setTimer = (key: timerKeys, interval: boolean, callback: Function, ms: number) => {
+const setTimer = (key: timerKeys, interval: boolean, callback: () => void, ms: number) => {
   const existing = timeouts[key];
   if (existing) {
     throw new WebQueueError(replaceActiveTimer(key));
