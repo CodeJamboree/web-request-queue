@@ -1,7 +1,6 @@
 import * as stdout from "./utils/stdout.js";
 import { state } from '../src/state.js';
 import { stopTimers } from "../src/timers/stopTimers.js";
-import { timeLogger } from '../src/progress/timeLogger.js';
 import { dateMocker } from "./utils/dateMocker.js";
 import { httpsMocker } from "./utils/httpsMocker.js";
 import { performanceMocker } from "./utils/performanceMocker.js";
@@ -84,7 +83,6 @@ const beforeEach = () => {
   httpsMocker.mock();
 }
 const afterEach = () => {
-  timeLogger.stop();
   dateMocker.restore();
   performanceMocker.restore();
   httpsMocker.restore();

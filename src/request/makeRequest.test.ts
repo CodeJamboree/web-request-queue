@@ -39,7 +39,7 @@ export const basicRequest = () => {
   expect(httpsArgs[1], 'options').equals(options);
   expect(httpsArgs[2], 'callback').isFunction();
 
-  expect(callback.lastArgs()?.[0]).instanceOf('MockResponse');
+  expect(callback.lastCallArg()).instanceOf('MockResponse');
 }
 export const lastRequestUpdated = () => {
   setupDelay(false);
@@ -63,7 +63,7 @@ export const callbackForResponse = () => {
   const onRequested = undefined;
   const onCancel = undefined;
   makeRequest({ args, onRequested, onCancel })
-  expect(callback.lastArgs()?.[0]).instanceOf('MockResponse');
+  expect(callback.lastCall()?.[0]).instanceOf('MockResponse');
 }
 
 export const callbackForRequest = () => {
@@ -72,5 +72,5 @@ export const callbackForRequest = () => {
   const onRequested = mockFn();
   const onCancel = undefined;
   makeRequest({ args, onRequested, onCancel })
-  expect(onRequested.lastArgs()?.[0], 'mock request').instanceOf('MockRequest');
+  expect(onRequested.lastCall()?.[0], 'mock request').instanceOf('MockRequest');
 }

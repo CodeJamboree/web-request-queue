@@ -1,7 +1,5 @@
-import { stopQueueTimer } from './stopQueueTimer.js';
-import { stopProgressTimer } from './stopProgressTimer.js';
+import { queueInterval, queueTimeout, state } from '../state.js';
 
 export const stopTimers = () => {
-  stopQueueTimer();
-  stopProgressTimer();
+  state.clearTimers(queueTimeout, queueInterval);
 }

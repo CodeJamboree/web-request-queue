@@ -1,10 +1,13 @@
-import http from 'http';
 import https from 'https';
 
-export type IncomingMessage2 = http.IncomingMessage;
 export type RequestOptions = https.RequestOptions
-export type ClientRequest = http.ClientRequest;
-
+// export type ClientRequest = http.ClientRequest;
+export interface ClientRequest {
+  on(event: string, listener: (...args: any[]) => void): this;
+  on(event: "response", listener: (res: IncomingMessage) => void): this;
+  on(event: "error", listener: (err: Error) => void): this;
+  end(): void
+}
 export interface IncomingMessage {
   statusCode?: number,
   statusMessage?: string,
@@ -16,7 +19,6 @@ export interface IncomingMessage {
 
 export interface requestHandler {
   (clientRequest: ClientRequest): void;
-  // (clientRequest: PromiseLike<ClientRequest>): void;
 };
 export interface cancelHandler { (reason: any | PromiseLike<any>): void };
 export interface responseHandler { (res: IncomingMessage): void };

@@ -1,38 +1,32 @@
 import { queueArgs, promisedQueue, requestArgs, ClientRequest, queueParams } from './types.js';
-import { state, blocked as isBlocked, queue as queueKey } from './state.js';
+import { state, queue as queueKey } from './state.js';
 import { startTimers } from './timers/startTimers.js';
 import { WebQueueError } from './WebQueueError.js';
-import { wrongArgCount, blocked } from './locale.js';
+import { outOfRange } from './locale.js';
 import { isObject } from './utils/isObject.js';
 
 export const queue = (...args: queueArgs) => {
-  if (state.flagged(isBlocked)) {
-    throw new WebQueueError(blocked());
-  }
-
   const params = parseParams(args);
-
   state.append(queueKey, params);
   startTimers();
-
   return params.promise;
 }
 
 const parseParams = (args: queueArgs): promisedQueue => {
-
+  const key = 'args';
   const count = args.length;
   const [first] = args;
 
   switch (count) {
     case 1:
-      if (isObject(first) && 'args' in first) {
+      if (isObject(first) && key in first) {
         return first as queueParams;
       }
     case 2:
     case 3:
       return promisify(args as requestArgs);
     default:
-      throw new WebQueueError(wrongArgCount('queue', count, 1, 3));
+      throw new WebQueueError(outOfRange(key, count, 1, 3));
   }
 }
 

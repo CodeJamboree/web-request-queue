@@ -1,22 +1,17 @@
-export const replaceActiveTimer = (key: string) => `Attempted to replace ${key} before it was destroyed.`;
+export const replaceActiveTimer = (key: string) =>
+  `${key}: still active`;
 
-export const unknownUnit = (unknownUnit: string, units: Record<string, number>) => `Unknown unit: ${unknownUnit}. Expected ${Object.keys(units).join(', ')}`;
+export const unexpectedValue = (name: string, value: any) =>
+  `${name}: unexpected value (${value})`;
 
-export const wrongArgCount = (name: string, count: number, min: number, max: number) => `Expected ${min} to ${max} arguments for ${name}. Received ${count}`;
+export const outOfRange = (name: string, value: any, min: number, max: number | undefined) => {
+  const prefix = `${name}: out of range (${value}).`;
+  return max === undefined ? `${prefix} ${min} or more.` : `${prefix} ${min} to ${max}.`;
+}
+export const cascadingCancelation = (reason: any) =>
+  `Cascading cancellation: ${reason}`;
 
-export const finiteMinOrMore = (name: string, value: any, min: number) => `${name} out of range (${value}). Must be finite number at ${min} or more.`;
-
-export const blocked = () => `Not allowing new requests.`;
-
-export const otherRequestError = (error: Error) => `A prior request had an error: ${error}`;
-
-export const badStatus = (statusCode: number, statusMessage: string) => `Unexpected Status ${statusCode}: ${statusMessage}`
-
-export const canceledFromOtherRequest = (reason: string) => `A prior request ended with: ${reason}`;
-
-export const defaultStatusMessage = (statusCode?: number) => '(no message)';
-
-export const cancelingQueued = (count: number) => `Canceling ${count} queued requests`;
-
-export const cancelQueueReason = () => `All queued requests canceled.`;
-
+export const responseStatus = (statusCode: number, statusMessage: string | undefined) => {
+  const prefix = `Status code ${statusCode}`;
+  return statusMessage ? `${prefix}: ${statusMessage}` : prefix;
+}

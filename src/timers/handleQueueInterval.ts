@@ -5,6 +5,7 @@ import { makeRequest } from '../request/makeRequest.js';
 export const handleQueueInterval = () => {
   if (state.flagged(blocked)) {
     stopTimers();
+    return;
   }
   const params = state.removeFirst(queue);
   if (params) {

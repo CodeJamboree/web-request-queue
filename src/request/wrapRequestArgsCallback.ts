@@ -1,7 +1,7 @@
 import { handleResponse } from './handleResponse.js';
-import { cancelHandler, requestArgs, RequestOptions, responseHandler } from '../types.js';
+import { cancelHandler, requestArgs, RequestOptions } from '../types.js';
 import { WebQueueError } from '../WebQueueError.js';
-import { wrongArgCount } from '../locale.js';
+import { outOfRange } from '../locale.js';
 import { isFunction } from '../utils/isFunction.js';
 
 export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, requestArgs: requestArgs): requestArgs => {
@@ -38,6 +38,6 @@ export const wrapRequestArgsCallback = (onCancel: cancelHandler | undefined, req
         handleResponse(callback, onCancel)
       ];
     default:
-      throw new WebQueueError(wrongArgCount('request', count, 1, 3));
+      throw new WebQueueError(outOfRange('request', count, 1, 3));
   }
 }

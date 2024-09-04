@@ -54,33 +54,27 @@ webRequest.queue({
 To cancel all requests currently in the queue, call the method
 
 ```js
-webRequest.cancelQueuedRequests();
-```
-
-New requests will not be allowed to be added to the queue. To restore allowing new requests to be queued, call the method to set the expected request count.
-
-```js
-webRequest.setTotalRequests(100);
-```
-
-# Handle Cancled Requests
-
-If a request in the queue is discarded, the onCancel event will be invoked.
-
-```js
-const onCancel = err => {
-  console.error(err);
-  // Output: I am canceling all requests
-}
-webRequest.queue({
-  args: [url, options, callback],
-  onRequested,
-  onCancel
-});
-webRequest.cancelQueuedRequests('I am canceling all requests');
+const onCancel = err => console.log(err);
+webRequest.queue({args: ["https://localhost"], onCancel});
+webRequest.cancel("I have my reasons");
+// Output: I have my reasons
 ```
 
 # Configuration
+
+Configuration options can be passed to adjust the behavior. Each key is optional.
+
+```js
+webRequest.configure({
+  requestsPerPeriod: 10,
+  secondsPerPeriod: 60,
+  pause: false
+});
+```
+
+- `requestsPerPeriod`: The total number of requests permitted per period.
+- `secondsPerPeriod`: The number of seconds within a period.
+- `pause`: Start/Stop the requests without flushing the queue
 
 ## Request Rate
 
@@ -88,29 +82,46 @@ You may set the number of requests allowed within a given period.
 
 ```js
 // Limit to 10 requests per minute
-webRequest.setRequestsPerPeriod(10);
-webRequest.setSecondsPerPeriod(60);
+webRequest.configure({ reqeustsPerPeriod: 10, secondsPerPeriod: 60 });
 ```
-## Progress
+## Info
 
-You can set display the progress. It will attempt to estimate the time remaining based on the number of requests in the queue, or the total number of expected requests that you had set. By default, evaluation is disabled.
+You can set request information about the current state of the queue.
 
 ```js
-// evaluate progress every 15 seconds
-webRequest.setEvaluationSeconds(15);
-// Web Requests: 15.015s 2 of 2000 ~ 20h:03m
-// Web Requests: 30.403s 5 of 2000 ~ 20h:03m
-// Web Requests: 45.075s 7 of 2000 ~ 20h:02m
-
-// disable progress output
-webRequest.setEvaluationSeconds(Infinity);
+console.log(webRequest.info());
 ```
 
-## Total Requests
+It will provide an object similar to the following.
 
-Rather than relying on queued requests alone, you may set the number of total requests that you expecte to send overall to get a better estimate on the remaing time displayed in the progress logs.
-
+```json
+{
+  "requested": 32,
+  "queued": 12000,
+  "firstAt": "2024-08-30T23:51:22.818Z",
+  "paused": false
+}
+```
+With it, you can work out the progress of a batch of requests.
 ```js
-// Set number of requests expected to be made (if known)
-webRequest.setTotalRequests(500);
+
+const label = 'Queue';
+console.time(label);
+
+let interval = setInterval(() => {
+  const { requested, queued } = webRequest.info();
+  console.timeLog(label, 'Requested', requested, 'of', requested + queued);
+}, 1000);
+
+const queueId = id => webRequest.queue(`https://localhost/${id}`);
+
+Promise.all([1,2,3].map(queueId))
+    .finally(() => {
+      clearInterval(interval);
+      console.timeEnd(label);
+    });
+// Queue: 1.002s Requested 1 of 3
+// Queue: 2.004s Requested 1 of 3
+// Queue: 3.005s Requested 2 of 3
+// Queue: 4.007s Requested 2 of 3
 ```

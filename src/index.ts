@@ -1,15 +1,11 @@
 import { queue } from './queue.js';
-import { setEvaluationSeconds } from './setEvaluationSeconds.js';
-import { setRequestsPerPeriod } from './setRequestsPerPeriod.js';
-import { setSecondsPerPeriod } from './setSecondsPerPeriod.js';
-import { setTotalRequests } from './setTotalRequests.js';
 import { cancelQueuedRequests } from './request/cancelQueuedRequests.js';
+import { configure } from './configure.js';
+import { info } from './info.js';
 
 export const webRequest = {
+  configure,
   queue,
-  setEvaluationSeconds,
-  setRequestsPerPeriod,
-  setSecondsPerPeriod,
-  setTotalRequests,
-  cancelQueuedRequests,
+  cancel: cancelQueuedRequests,
+  info
 }

@@ -8,25 +8,19 @@ const none = undefined;
 
 type recentRequest = 'recentRequest';
 type firstRequest = 'firstRequest';
-type recentEval = 'recentEval';
-type dateKeys = recentRequest | firstRequest | recentEval;
+type dateKeys = recentRequest | firstRequest;
 
 export const recentRequest: recentRequest = 'recentRequest';
 export const firstRequest: firstRequest = 'firstRequest';
-export const recentEval: recentEval = 'recentEval';
 
-type evalInterval = 'evalInterval';
-type evalTimeout = 'evalTimeout';
 type queueInterval = 'queueInterval';
 type queueTimeout = 'queueTimeout';
 
-type timeoutKeys = evalTimeout | queueTimeout;
-type intervalKeys = evalInterval | queueInterval;
+type timeoutKeys = queueTimeout;
+type intervalKeys = queueInterval;
 
 type timerKeys = timeoutKeys | intervalKeys;
 
-export const evalInterval: evalInterval = 'evalInterval';
-export const evalTimeout: evalTimeout = 'evalTimeout';
 export const queueInterval: queueInterval = 'queueInterval';
 export const queueTimeout: queueTimeout = 'queueTimeout';
 
@@ -40,27 +34,18 @@ export const queue: arrayKeys = 'queue';
 
 type requested = 'requested';
 type expected = 'expected';
-type priorRemaining = 'priorRemaining';
-type priorTotal = 'priorTotal';
 type maxPerPeriod = 'maxPerPeriod';
 type secondsPerPeriod = 'secondsPerPeriod';
-type secondsPerEval = 'secondsPerEval';
 
 type numericKeys = requested |
   expected |
-  priorRemaining |
-  priorTotal |
   maxPerPeriod |
-  secondsPerPeriod |
-  secondsPerEval;
+  secondsPerPeriod;
 
 export const requested: requested = 'requested';
 export const expected: expected = 'expected';
-export const priorRemaining: priorRemaining = 'priorRemaining';
-export const priorTotal: priorTotal = 'priorTotal';
 export const maxPerPeriod: maxPerPeriod = 'maxPerPeriod';
 export const secondsPerPeriod: secondsPerPeriod = 'secondsPerPeriod';
-export const secondsPerEval: secondsPerEval = 'secondsPerEval';
 
 type arrayType = queueParams;
 const datesKey = 'dates';
@@ -69,10 +54,12 @@ const flagsKey = 'flags';
 const numsKey = 'nums';
 const arraysKey = 'arrays';
 
+const timerKey = 'id';
+const intervalKey = 'interval';
+
 interface timeout {
-  timer: NodeJS.Timeout | number | undefined,
-  interval: boolean,
-  active: boolean
+  [timerKey]: NodeJS.Timeout | number | undefined,
+  [intervalKey]: boolean
 }
 
 type collectionType = {
@@ -86,8 +73,7 @@ type collectionType = {
 const vx: collectionType = {
   [datesKey]: {
     [recentRequest]: none,
-    [firstRequest]: none,
-    [recentEval]: none,
+    [firstRequest]: none
   },
   [flagsKey]: {
     [blocked]: false,
@@ -96,19 +82,14 @@ const vx: collectionType = {
     [queue]: [],
   },
   [timeoutsKey]: {
-    [evalInterval]: none,
-    [evalTimeout]: none,
     [queueInterval]: none,
     [queueTimeout]: none,
   },
   [numsKey]: {
     [requested]: 0,
     [expected]: 1,
-    [priorRemaining]: 0,
-    [priorTotal]: 0,
     [maxPerPeriod]: 100,
-    [secondsPerPeriod]: 60,
-    [secondsPerEval]: Infinity
+    [secondsPerPeriod]: 60
   }
 };
 
@@ -144,7 +125,7 @@ export const startTimeout = (key: timeoutKeys, callback: Function, ms: number) =
 }
 const setTimer = (key: timerKeys, interval: boolean, callback: Function, ms: number) => {
   const existing = vx[timeoutsKey][key];
-  if (existing && existing.active) {
+  if (existing) {
     throw new WebQueueError(replaceActiveTimer(key));
   }
   let timer;
@@ -154,24 +135,24 @@ const setTimer = (key: timerKeys, interval: boolean, callback: Function, ms: num
     timer = setTimeout(callback, ms);
   }
   vx[timeoutsKey][key] = {
-    timer,
-    interval,
-    active: true
+    [timerKey]: timer,
+    [intervalKey]: interval
   };
 }
 export const clearTimers = (...keys: timerKeys[]) => {
-  keys.forEach(key => {
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
     const timer = vx[timeoutsKey][key];
     if (timer) {
-      if (timer.interval) {
-        clearInterval(timer.timer);
+      const intervalId = timer[timerKey];
+      if (timer[intervalKey]) {
+        clearInterval(intervalId);
       } else {
-        clearTimeout(timer.timer);
+        clearTimeout(intervalId);
       }
-      timer.active = false;
+      vx[timeoutsKey][key] = none;
     }
-    vx[timeoutsKey][key] = none;
-  })
+  }
 }
 export const hasTimers = (...keys: timerKeys[]): boolean => {
   return keys.some(key => vx[timeoutsKey][key]);
@@ -203,8 +184,7 @@ export const removeAll = <T extends arrayType>(key: arrayKeys): T[] => {
 export const reset = () => {
   vx[datesKey] = {
     [recentRequest]: none,
-    [firstRequest]: none,
-    [recentEval]: none,
+    [firstRequest]: none
   };
   vx[flagsKey] = {
     [blocked]: false,
@@ -213,19 +193,14 @@ export const reset = () => {
     [queue]: [],
   };
   vx[timeoutsKey] = {
-    [evalInterval]: none,
-    [evalTimeout]: none,
     [queueInterval]: none,
     [queueTimeout]: none,
   };
   vx[numsKey] = {
     [requested]: 0,
     [expected]: 1,
-    [priorRemaining]: 0,
-    [priorTotal]: 0,
     [maxPerPeriod]: 100,
-    [secondsPerPeriod]: 60,
-    [secondsPerEval]: Infinity
+    [secondsPerPeriod]: 60
   }
 }
 

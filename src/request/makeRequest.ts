@@ -5,7 +5,7 @@ import { wrapRequestArgsCallback } from './wrapRequestArgsCallback.js';
 import { handleRequestError } from './handleRequestError.js';
 import { queueParams, RequestOptions, responseHandler } from '../types.js';
 import { WebQueueError } from '../WebQueueError.js';
-import { wrongArgCount } from '../locale.js';
+import { outOfRange } from '../locale.js';
 import { invoke } from '../utils/invoke.js';
 
 export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
@@ -19,8 +19,8 @@ export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
   const preparedArgs = wrapRequestArgsCallback(onCancel, args);
   const [urlOrOptions, optionsOrCallback, callback] = preparedArgs;
   let clientRequest;
-
-  switch (preparedArgs.length) {
+  const count = preparedArgs.length;
+  switch (count) {
     case 2:
       clientRequest = https.request(
         urlOrOptions as string | URL | RequestOptions,
@@ -35,7 +35,7 @@ export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
       );
       break;
     default:
-      throw new WebQueueError(wrongArgCount('request', preparedArgs.length, 2, 3));
+      throw new WebQueueError(outOfRange('args', count, 2, 3));
   }
 
   clientRequest.on('error', handleRequestError(clientRequest, onCancel));

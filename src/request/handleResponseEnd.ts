@@ -1,15 +1,19 @@
-import { badStatus, canceledFromOtherRequest, defaultStatusMessage } from '../locale.js';
-import { IncomingMessage } from '../types.js';
+import { responseStatus, cascadingCancelation } from '../locale.js';
 import { invoke } from '../utils/invoke.js';
 import { cancelQueuedRequests } from './cancelQueuedRequests.js';
 
-export const handleResponseEnd = (response: IncomingMessage, onCancel: Function | undefined) => () => {
-  const { statusCode = 200, statusMessage = defaultStatusMessage(response.statusCode) } = response;
-  if (statusCode >= 200 && statusCode < 300) return;
-  const reason = badStatus(statusCode, statusMessage);
+interface status {
+  statusCode?: number,
+  statusMessage?: string
+}
+const redirection = 300;
+
+export const handleResponseEnd = ({ statusCode, statusMessage }: status, onCancel: Function | undefined) => () => {
+  if (statusCode === undefined || statusCode < redirection) return;
+  const reason = responseStatus(statusCode, statusMessage);
   try {
     invoke(onCancel, reason);
   } finally {
-    cancelQueuedRequests(canceledFromOtherRequest(reason));
+    cancelQueuedRequests(cascadingCancelation(reason));
   }
 }

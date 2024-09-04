@@ -2,12 +2,17 @@ import { webRequest } from '../src/index.js';
 import { ClientRequest, IncomingMessage } from '../src/types.js';
 import { __assign } from 'tslib';
 
-// Show progress once per second
-webRequest.setEvaluationSeconds(1);
+const label = 'Queue';
+console.time(label);
+let interval = setInterval(() => {
+  const { requested, queued } = webRequest.info();
+  console.timeLog(label, 'Requested', requested, 'of', requested + queued);
+}, 1000);
 
-// Make only 1 request every 2 seconds
-webRequest.setRequestsPerPeriod(1);
-webRequest.setSecondsPerPeriod(2);
+webRequest.configure({
+  requestsPerPeriod: 1,
+  secondsPerPeriod: 2
+});
 
 const handleRequest = async (req: ClientRequest) => new Promise<Buffer>((resolve, reject) => {
   let buffer: Buffer;
@@ -51,5 +56,9 @@ Promise.all(all)
   .catch(err => {
     console.error('Error', err);
   }).finally(() => {
+
+    clearInterval(interval);
+    console.timeEnd(label);
+
     console.log('done');
   });
