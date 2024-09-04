@@ -1,6 +1,6 @@
 {
   "name": "@codejamboree/web-request-queue",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Throttle web requests",
   "main": "dist/bundle.min.js",
   "exports": {
