@@ -1,4 +1,2 @@
 *
-!dist/bundle.js
-!dist/bundle.min.js
-!dist/index.d.ts
+!dist/**/*

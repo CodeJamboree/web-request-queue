@@ -2,58 +2,56 @@
   "name": "@codejamboree/web-request-queue",
   "version": "2.0.4",
   "description": "Throttle web requests",
-  "main": "dist/bundle.min.js",
+  "type": "module",
+  "main": "dist/commonjs/index.min.cjs",
+  "types": "dist/commonjs/types/index.d.min.ts",
+  "module": "dist/commonjs/index.min.cjs",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/bundle.min.mjs"
+        "types": "./dist/esm/types/index.d.min.mts",
+        "default": "./dist/esm/index.min.js"
       },
       "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/bundle.min.js"
+        "types": "./dist/commonjs/types/index.d.min.ts",
+        "default": "./dist/commonjs/index.min.cjs"
       }
     },
     "./production": {
       "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/bundle.min.mjs"
+        "types": "./dist/esm/types/index.d.min.mts",
+        "default": "./dist/esm/index.min.js"
       },
       "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/bundle.min.js"
+        "types": "./dist/commonjs/types/index.d.min.ts",
+        "default": "./dist/commonjs/index.min.cjs"
       }
     },
     "./development": {
       "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/bundle.mjs"
+        "types": "./dist/esm/types/index.d.mts",
+        "default": "./dist/esm/index.js"
       },
       "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/bundle.js"
+        "types": "./dist/commonjs/types/index.d.ts",
+        "default": "./dist/commonjs/index.cjs"
       }
     }
   },
-  "types": "./dist/index.d.ts",
-  "module": "./dist/bundle.min.js",
   "typesVersions": {
     "*": {
-      ".": [
-        "./dist/index.d.ts"
-      ],
       "production": [
-        "./dist/index.d.ts"
+        "dist/commonjs/types/index.d.min.ts"
       ],
       "development": [
-        "./dist/index.d.ts"
+        "dist/commonjs/types/index.d.ts"
       ]
     }
   },
-  "type": "module",
   "scripts": {
-    "build": "rm -rf build && tsc",
-    "bundle": "rm -rf dist && npx rollup -c",
+    "clean": "rm -rf build && rm -rf dist",
+    "build": "npm run clean && tsc",
+    "bundle": "npm run build && npx rollup -c ./build/rollup.config.js",
     "test": "npm run build && node ./build/scripts/test.js",
     "sample:https": "npm run build && node ./build/scripts/sample-https.js",
     "sample:queue:cb": "npm run build && node ./build/scripts/sample-queue-cb.js",
@@ -72,9 +70,10 @@
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
-    "@types/node": "^22.5.2",
+    "@types/node": "^22.5.4",
     "rollup": "^4.21.2",
     "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-license": "^3.5.2",
     "rollup-plugin-typescript2": "^0.36.0",
     "tslib": "^2.7.0",
     "typescript": "^5.5.4"
