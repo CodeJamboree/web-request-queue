@@ -1,6 +1,6 @@
 {
   "name": "@codejamboree/web-request-queue",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Throttle web requests",
   "type": "module",
   "main": "dist/commonjs/index.min.cjs",
