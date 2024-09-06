@@ -120,13 +120,11 @@ A few helper functions are included to simplify working with websites.
 
 ## Saving Files
 ```js
-const temp = path.join(os.tmpdir(), `temp-${Date.now()}.html`);
-webRequest.toFile(temp, "https://localhost");
+webRequest.toFile(filePath, url);
 ```
 ## Getting a string
 ```js
-const temp = path.join(os.tmpdir(), `temp-${Date.now()}.html`);
-const html = await webRequest.asString(temp, "https://localhost");
+const html = await webRequest.asString(url);
 console.log(html);
 ```
 ## Send to a stream
