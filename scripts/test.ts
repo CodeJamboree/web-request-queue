@@ -14,47 +14,68 @@ interface testState {
   failed: number,
   skipped: number,
   failures: string[],
-  hidePassing: boolean
+  hidePassing: boolean,
+  hasFocused: boolean
+}
+type SuiteInfo = {
+  focused?: boolean
+  runnable: number
+}
+interface TestSuite extends SuiteInfo {
+  tests: {
+    [test: string]: Function
+  }
+}
+interface TestSuites extends SuiteInfo {
+  suites: {
+    [key: string]: TestSuites | TestSuite
+  }
 }
 
 const main = async () => {
-  const suites = await getModules('build/src', /\.test\.js$/, '');
-
+  let modules = await getModules('build/src', /\.test\.js$/, '');
+  if (!modules) {
+    console.error('No tests found');
+    return;
+  }
   const state: testState = {
     passed: 0,
     failed: 0,
     skipped: 0,
     failures: [],
-    hidePassing: false
+    hidePassing: false,
+    hasFocused: false
   }
+  const testSuites = modulesAsTestSuites(state, modules, false);
+  if (!testSuites) {
+    if (state.skipped > 0) {
+      console.log('All tests skipped', state.skipped);
+    } else {
+      console.error('No valid tests found.');
+    }
+    return;
+  }
+
   beforeAll();
 
-  if (suites !== undefined)
-    await runSuites(suites, state);
+  await runSuites(testSuites, state);
 
   afterAll();
   summarizeTests(state);
 }
 
-const runSuites = async (suites: ModuleList | Module, state: testState, depth = 0, location = '') => {
-  const keys = Object.keys(suites);
+const runSuites = async (suites: TestSuites, state: testState, depth = 0, location = '') => {
+  const keys = Object.keys(suites.suites);
   const indent = depth === 0 ? '' : ' '.repeat(depth);
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
-    if (key.startsWith("x_")) {
-      console.info(`${indent}skip ${key}`);
-      state.skipped++;
-      continue;
-    }
-
     console.info(`${indent}${key}`);
-    const suite = suites[key];
     const suiteLocation = location === '' ? key : `${location}/${key}`;
-
-    const tests = Object.entries(suite as Module).filter(([_name, test]) => typeof test === 'function');
-    if (tests.length === 0) {
-      await runSuites(suite as ModuleList, state, depth + 1, suiteLocation);
+    const info = suites.suites[key];
+    if ('suites' in info) {
+      await runSuites(info, state, depth + 1, suiteLocation)
     } else {
+      const tests = Object.entries(info.tests);
       for (let i = 0; i < tests.length; i++) {
         await runTest(tests[i], i, tests, state, depth + 1, suiteLocation);
       }
@@ -90,15 +111,6 @@ const afterEach = () => {
 }
 const runTest = async ([name, test]: [string, Function], i: number, a: any[], state: testState, depth: number, location: string) => {
   const indent = ' '.repeat(depth);
-  if (name.startsWith('x_')) {
-    state.skipped++;
-    if (i < excess) {
-      console.debug(`${indent}skip: ${name}`);
-    } else if (i === excess) {
-      console.debug(`${indent}...`);
-    }
-    return;
-  }
   try {
     beforeEach();
     await test();
@@ -188,4 +200,89 @@ try {
 } catch (e) {
   console.error(e);
   console.info('done');
+}
+
+const isModule = (value: ModuleList | Module): value is Module => {
+  return Object.keys(value).some(key => typeof value[key] === 'function');
+}
+
+const modulesAsTestSuites = (state: testState, moduleOrList: ModuleList, skip: boolean): TestSuites | undefined => {
+  const keys = Object.keys(moduleOrList);
+  const filtered: TestSuites = {
+    focused: false,
+    runnable: 0,
+    suites: {}
+  };
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const target = moduleOrList[key];
+    let item: TestSuite | TestSuites | undefined = undefined;
+    const skipItem = skip || key.startsWith('x_');
+    if (isModule(target)) {
+      item = moduleAsTestSuite(state, target, skipItem);
+    } else {
+      item = modulesAsTestSuites(state, target as ModuleList, skipItem);
+    }
+    if (item) {
+      if (key.startsWith('f_')) {
+        item.focused = true;
+      }
+      if (item.focused) {
+        filtered.focused = true;
+      }
+      filtered.suites[key] = item;
+    }
+  }
+
+  if (filtered.focused) {
+    Object.keys(filtered.suites).forEach(key => {
+      const suite = filtered.suites[key];
+      if (suite.focused === false) {
+        state.skipped += suite.runnable;
+        delete filtered.suites[key];
+      }
+    });
+  }
+
+  filtered.runnable = Object.keys(filtered.suites).reduce(
+    (sum, key) => sum + filtered.suites[key].runnable, 0);
+
+  return filtered.runnable === 0 ? undefined : filtered;
+}
+const moduleAsTestSuite = (state: testState, module: Module, skip: boolean): TestSuite | undefined => {
+  const keys = Object.keys(module);
+  const testKeys = keys.filter(key => typeof module[key] === 'function');
+  const focusedTests = testKeys.filter(key => key.startsWith("f_"));
+  if (focusedTests.length !== 0) state.hasFocused = true;
+  if (skip || testKeys.length === 0) {
+    state.skipped += testKeys.length;
+    return;
+  }
+  const skippedTests = testKeys.filter(key => key.startsWith("x_"));
+  const unskippedTests = testKeys.filter(key => !key.startsWith("x_"));
+  state.skipped += skippedTests.length;
+  if (unskippedTests.length === 0) return;
+  if (focusedTests.length === 0) {
+    return unskippedTests.reduce<TestSuite>(
+      (suite, key) => {
+        suite.tests[key] = module[key];
+        return suite;
+      },
+      {
+        runnable: unskippedTests.length,
+        focused: false,
+        tests: {}
+      }
+    );
+  }
+  state.skipped += unskippedTests.length - focusedTests.length;
+  return focusedTests.reduce<TestSuite>(
+    (suite, key) => {
+      suite.tests[key] = module[key];
+      return suite;
+    }, {
+    runnable: focusedTests.length,
+    focused: true,
+    tests: {}
+  })
 }
