@@ -1,8 +1,9 @@
 import { state, queue as queueKey } from './state.js';
 import { startTimers } from './timers/startTimers.js';
-import { promisedQueue, requestArgs, ClientRequest, cancelCallback, requestCallback } from './global.js';
+import { promisedQueue, requestArgs, cancelCallback, requestCallback } from './global.js';
+import * as http from 'http';
 
-export const queue = async (...args: requestArgs): Promise<ClientRequest> => {
+export const queue = async (...args: requestArgs): Promise<http.ClientRequest> => {
   const params = await promisify(args);
   state.append(queueKey, params);
   startTimers();
@@ -12,7 +13,7 @@ export const queue = async (...args: requestArgs): Promise<ClientRequest> => {
 const promisify = async (args: requestArgs) => {
   let onRequested: undefined | requestCallback = undefined;
   let onCancel: undefined | cancelCallback = undefined;
-  let promise = new Promise<ClientRequest>((resolve, reject) => {
+  let promise = new Promise<http.ClientRequest>((resolve, reject) => {
     onRequested = resolve;
     onCancel = reject;
   });

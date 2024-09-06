@@ -1,9 +1,11 @@
 import { makeRequest } from "./makeRequest.js";
 import { expect } from '../../scripts/utils/expect.js';
 import { state, recentRequest, maxPerPeriod, secondsPerPeriod } from '../state.js';
-import { httpsMocker } from "../../scripts/utils/httpsMocker.js";
+import { httpsMocker, MockResponse } from "../../scripts/utils/httpsMocker.js";
 import { mockFn } from "../../scripts/utils/mockFn.js";
-import { requestArgs, RequestOptions, responseCallback } from '../global.js';
+import { requestArgs, responseCallback } from '../global.js';
+import * as https from 'https';
+import { invoke } from "../utils/invoke.js";
 
 const setupDelay = (isDelayed = true) => {
 
@@ -25,7 +27,7 @@ export const requestDelayed = () => {
 export const basicRequest = () => {
   setupDelay(false);
   const url = new URL('https://localhost');
-  const options: RequestOptions = { servername: 'options' };
+  const options: https.RequestOptions = { servername: 'options' };
   const callback = mockFn();
   const onRequested = undefined;
   const onCancel = undefined;
@@ -44,7 +46,7 @@ export const basicRequest = () => {
 export const lastRequestUpdated = () => {
   setupDelay(false);
   const url = 'https://localhost';
-  const options: RequestOptions = { servername: 'options' };
+  const options: https.RequestOptions = { servername: 'options' };
   const onRequested = undefined;
   const onCancel = undefined;
   const requested = makeRequest({ args: [url, options], onRequested, onCancel })
@@ -56,28 +58,28 @@ export const callbackForResponse = () => {
   setupDelay(false);
   const callback = mockFn();
   const args: requestArgs = [
-    "my url",
+    "https://localhost",
     { servername: 'options' },
     callback
   ];
   const onRequested = undefined;
   const onCancel = undefined;
   makeRequest({ args, onRequested, onCancel })
-  expect(callback.lastCall()?.[0]).instanceOf('MockResponse');
+  expect(callback.lastCallArg()).instanceOf(MockResponse);
 }
 
 export const callbackForRequest = () => {
   setupDelay(false);
   const args: [
-    options: RequestOptions | string | URL,
+    options: https.RequestOptions | string | URL,
     callback?: responseCallback
   ] | [
     url: string | URL,
-    options: RequestOptions,
+    options: https.RequestOptions,
     callback?: responseCallback
   ] = [{}];
   const onRequested = mockFn();
   const onCancel = undefined;
   makeRequest({ args, onRequested, onCancel })
-  expect(onRequested.lastCall()?.[0], 'mock request').instanceOf('MockRequest');
+  expect(onRequested.lastCallArg(), 'mock request').instanceOf('MockRequest');
 }

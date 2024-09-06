@@ -1,26 +1,19 @@
 import https from 'https';
 
-const url = new URL('https://github.com/CodeJamboree/')
+const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
 const options = {
   hostname: url.hostname,
   path: url.pathname,
-  method: 'GET'
-}
-const res = https.request(options, (res) => {
+  headers: {
+    'user-agent': '@CodeJamboree/Web-Request-Queue'
+  }
+};
+
+const res = https.request(options, res => {
   let total = 0;
   console.log('Status', res.statusCode, res.statusMessage);
-
-  res.on('data', data => {
-    total += data.length;
-  });
-  res.on('end', () => {
-    console.log('Recevied', total, 'bytes');
-  });
+  res.on('data', data => total += data.length);
+  res.on('end', () => console.log(total, 'bytes'));
 });
-
-res.on('error', (e) => {
-  console.error('Error');
-  console.log(e);
-});
-
+res.on('error', err => console.log(err));
 res.end();

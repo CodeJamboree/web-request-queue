@@ -1,5 +1,6 @@
-import https from 'https';
-import { ClientRequest, IncomingMessage, responseCallback } from '../../src/global';
+import * as http from 'http';
+import https from 'https'; // DO NOT import *
+import { responseCallback } from '../../src/global';
 
 type handler = [name: string, handler: Function];
 const original = {
@@ -26,19 +27,19 @@ const emitResponse = (event: string, ...args: any[]) => {
     if (name === event) handler(...args);
   });
 }
-class MockRequest {
+export class MockRequest {
   on(event: string, cb: Function) {
     requestHandlers.push([event, cb])
   }
 }
-class MockResponse {
+export class MockResponse {
   statusCode = 200;
   statusMessage = 'OK';
   on(event: string, cb: Function) {
     responseHandlers.push([event, cb])
   }
 }
-const simpleRequest = (...args: any[]): ClientRequest => {
+const simpleRequest = (...args: any[]): http.ClientRequest => {
   let callback: responseCallback | undefined;
   switch (args.length) {
     case 2:
@@ -51,8 +52,8 @@ const simpleRequest = (...args: any[]): ClientRequest => {
       break;
   }
   calls.push(args);
-  const response = new MockResponse() as IncomingMessage;
-  const request = new MockRequest() as ClientRequest;
+  const response = new MockResponse() as http.IncomingMessage;
+  const request = new MockRequest() as http.ClientRequest;
 
   if (typeof callback === 'function') {
     callback(response);

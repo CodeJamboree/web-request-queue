@@ -1,9 +1,8 @@
-import http from 'http';
 import { handleResponse } from "./handleResponse.js";
 import { mockFn } from '../../scripts/utils/mockFn.js';
 import { expect } from '../../scripts/utils/expect.js';
 import { responseStatus } from "../locale.js";
-import { IncomingMessage } from '../global.js';
+import * as http from 'http';
 
 export const barbones = () => {
   const callback = undefined;
@@ -147,7 +146,7 @@ export const goodStatusDoesNotInvokeCancel = () => {
 }
 
 
-const mockResponse = (onFunction?: Function): IncomingMessage => {
+const mockResponse = (onFunction?: Function): http.IncomingMessage => {
   const response = {
     statusCode: 200,
     statusMessage: 'OK',
@@ -156,5 +155,5 @@ const mockResponse = (onFunction?: Function): IncomingMessage => {
       return response;
     }
   };
-  return response as IncomingMessage;
+  return response as http.IncomingMessage;
 }

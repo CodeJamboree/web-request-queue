@@ -1,11 +1,8 @@
 import { webRequest } from '../src/index.js';
-import { ClientRequest, requestCallback, responseCallback } from '../src/global.js';
 
-const label = 'Queue';
-console.time(label);
 let interval = setInterval(() => {
   const { requested, queued } = webRequest.info();
-  console.timeLog(label, 'Requested', requested, 'of', requested + queued);
+  console.log('Requested', requested, 'of', requested + queued);
 }, 1000);
 
 webRequest.configure({
@@ -13,51 +10,35 @@ webRequest.configure({
   secondsPerPeriod: 2
 });
 
-const handleRequest = async (req: ClientRequest) => new Promise<Buffer>((resolve, reject) => {
-  let buffer: Buffer;
-  const handleEnd = () => resolve(buffer);
-  const handleResponse: responseCallback = (res) => {
-    if (buffer) return;
-    buffer = Buffer.alloc(0);
-    res.on('error', reject);
-    res.on('end', handleEnd);
-    res.on('close', handleEnd);
-    res.on('data', (data) => {
-      buffer = Buffer.concat([buffer, data]);
-    });
-  }
+const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
 
-  req.on('error', reject);
-  req.on('timeout', () => reject('Request timed out'));
-  req.on('abort', () => reject('Request aborted'));
-  req.on('upgrade', handleResponse);
-  req.on('response', handleResponse);
-  req.on('connect', handleResponse);
-  req.on('close', handleResponse);
-  req.end();
-});
-
+const options = { headers: { 'user-agent': '@CodeJamboree/Web-Request-Queue' } };
 
 const all: Promise<Buffer>[] = [];
 for (let i = 0; i < 3; i++) {
   const queued = webRequest
-    .queue(`https://github.com/CodeJamboree/?${i}`)
-    .then(handleRequest);
+    .queue(url, options)
+    .then(req => new Promise<Buffer>((resolve, reject) => {
+      req.on('error', reject);
+      req.on('response', (res) => {
+        let buffers: Buffer[] = [];
+        res.on('error', reject);
+        res.on('end', () => resolve(Buffer.concat(buffers)));
+        res.on('data', data => buffers.push(data));
+      });
+      req.end();
+    }));
   all.push(queued);
 }
 
 Promise.all(all)
   .then(buffers => {
-    console.log('Downloaded', buffers.length, 'pages');
-    const bytes = buffers.reduce((sum, buffer) => sum + (buffer?.length ?? 0), 0);
+    console.log(buffers.length, 'requests');
+    const bytes = buffers.reduce((sum, buffer) => sum + buffer.length, 0);
     console.log(bytes, 'bytes total');
   })
-  .catch(err => {
-    console.error('Error', err);
-  }).finally(() => {
-
+  .catch(err => console.error(err))
+  .finally(() => {
     clearInterval(interval);
-    console.timeEnd(label);
-
     console.log('done');
   });

@@ -3,7 +3,7 @@ import { mockFn } from '../../scripts/utils/mockFn.js';
 import { expect } from '../../scripts/utils/expect.js';
 import { queue, state } from '../state.js';
 import { cascadingCancelation, responseStatus } from "../locale.js";
-import { IncomingMessage } from '../global.js';
+import * as http from 'http';
 
 const url = new URL('https://localhost');
 
@@ -47,11 +47,11 @@ export const badResponseCancelsQueue = () => {
     [cascadingCancelation(responseStatus(401, 'Unauthorized'))]);
 }
 
-const mockResponse = (statusCode: number, statusMessage: string): IncomingMessage => {
+const mockResponse = (statusCode: number, statusMessage: string): http.IncomingMessage => {
   const response = {
     statusCode,
     statusMessage,
     on: () => response
   };
-  return response as unknown as IncomingMessage;
+  return response as unknown as http.IncomingMessage;
 }

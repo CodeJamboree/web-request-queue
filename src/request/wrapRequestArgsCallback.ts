@@ -1,4 +1,4 @@
-import https from 'https';
+import * as https from 'https';
 import { handleResponse } from './handleResponse.js';
 import { WebQueueError } from '../WebQueueError.js';
 import { outOfRange } from '../locale.js';
@@ -28,7 +28,7 @@ export const wrapRequestArgsCallback = (onCancel: Function | undefined, requestA
       } else {
         return [
           urlOrOptions as string | URL,
-          optionsOrCallback as https.RequestOptions,
+          optionsOrCallback as https.ServerOptions,
           handleResponse(undefined, onCancel)
         ];
       }

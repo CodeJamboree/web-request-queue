@@ -15,7 +15,7 @@ const dev = pkg.exports['./development'];
 const prod = pkg.exports['./production'];
 
 const input = './src/index.ts';
-const external = ['http', 'https'];
+const external = ['http', 'https', 'fs', 'stream'];
 const name = 'webRequestQueue';
 
 const banner = read('LICENSE.md');

@@ -1,29 +1,23 @@
-import { RequestOptions } from 'https';
-import { ClientRequest, IncomingMessage } from 'http';
+import * as https from 'https';
+import * as http from 'http';
 
-export {
-  ClientRequest,
-  IncomingMessage,
-  RequestOptions
-}
-
-export type requestCallback = (clientRequest: ClientRequest) => void;
-export type responseCallback = (res: IncomingMessage) => void;
+export type requestCallback = (clientRequest: http.ClientRequest) => void;
+export type responseCallback = (res: http.IncomingMessage) => void;
 export type cancelCallback = (reason?: any) => void;
 
 type urlString = string | URL;
 
 export type requestArgs = [
-  options: RequestOptions | urlString,
+  options: https.RequestOptions | urlString,
   callback?: responseCallback
 ] | [
   url: urlString,
-  options: RequestOptions,
+  options: https.RequestOptions,
   callback?: responseCallback
 ];
 
 export interface promisedQueue extends queueParams {
-  promise: Promise<ClientRequest>
+  promise: Promise<http.ClientRequest>
 }
 
 type PromiseLikeOrValue<T> = T | PromiseLike<T>;
