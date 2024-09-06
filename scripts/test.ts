@@ -5,16 +5,28 @@ import { dateMocker } from "./utils/dateMocker.js";
 import { httpsMocker } from "./utils/httpsMocker.js";
 import { performanceMocker } from "./utils/performanceMocker.js";
 import { ExpectationError } from './utils/ExpectationError.js';
-
 import { getModules, ModuleList, Module } from './utils/getModules.js';
-const excess = 10;
+
+/*
+All functions in target modules are considered as tests
+Any function prefixed with SKIP_PREFIX is skipped
+Any function prefixed with FOCUS_PREFIX is focused, causing other tests to be skipped
+A focused test within a module bubbled up, so that only focused tests accross all modules are ran
+Any modules file name prefixed with SKIP_PREFIX and FOCUS_PREFIX obeys the same rules.
+*/
+
+const TEST_FOLDER = "build/src";
+const TEST_FILE_PATTERN = /\.test\.js$/;
+const TEST_FILE_REPLACEMENT = '';
+const SKIP_PREFIX = "x_";
+const FOCUS_PREFIX = "f_";
+const EXCESS_TESTS = Infinity; // zero to hide; Infinity to show all; Otherwise hide after X passed (per suite)
 
 interface testState {
   passed: number,
   failed: number,
   skipped: number,
   failures: string[],
-  hidePassing: boolean,
   hasFocused: boolean
 }
 type SuiteInfo = {
@@ -33,7 +45,7 @@ interface TestSuites extends SuiteInfo {
 }
 
 const main = async () => {
-  let modules = await getModules('build/src', /\.test\.js$/, '');
+  let modules = await getModules(TEST_FOLDER, TEST_FILE_PATTERN, TEST_FILE_REPLACEMENT);
   if (!modules) {
     console.error('No tests found');
     return;
@@ -43,7 +55,6 @@ const main = async () => {
     failed: 0,
     skipped: 0,
     failures: [],
-    hidePassing: false,
     hasFocused: false
   }
   const testSuites = modulesAsTestSuites(state, modules, false);
@@ -64,12 +75,17 @@ const main = async () => {
   summarizeTests(state);
 }
 
+// Indent is specifically to prevent altering tests that evaluate
+// the stdout buffer. Otherwise console.group/groupEnd could be used.
+const indent = (depth: number, message: string): string => {
+  let space = depth === 0 ? '' : ' '.repeat(depth * 2);
+  return `${space}${message}`;
+}
 const runSuites = async (suites: TestSuites, state: testState, depth = 0, location = '') => {
   const keys = Object.keys(suites.suites);
-  const indent = depth === 0 ? '' : ' '.repeat(depth);
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
-    console.info(`${indent}${key}`);
+    console.info(indent(depth, key));
     const suiteLocation = location === '' ? key : `${location}/${key}`;
     const info = suites.suites[key];
     if ('suites' in info) {
@@ -110,26 +126,25 @@ const afterEach = () => {
   stdout.showOutput();
 }
 const runTest = async ([name, test]: [string, Function], i: number, a: any[], state: testState, depth: number, location: string) => {
-  const indent = ' '.repeat(depth);
   try {
     beforeEach();
     await test();
     state.passed++;
     afterEach();
-    if (!state.hidePassing) {
-      if (i < excess) {
-        console.info(`${indent}pass: ${name}`);
-      } else if (i === excess) {
-        console.debug(`${indent}pass: ...`);
+    if (EXCESS_TESTS > 0) {
+      if (i < EXCESS_TESTS) {
+        console.info(indent(depth, `pass: ${name}`));
+      } else if (i === EXCESS_TESTS) {
+        console.debug(indent(depth, `pass: ...`));
       } else if (i === a.length - 1) {
-        console.info(`${indent}pass: ${name}`);
+        console.info(indent(depth, `pass: ${name}`));
       }
     }
   } catch (e) {
     state.failed++;
     afterEach();
     state.failures.push(`${location} ${name} ${e}`);
-    console.error(`${indent}fail: ${name} ${e}`);
+    console.error(indent(depth, `fail: ${name} ${e}`));
     if ((e instanceof ExpectationError) && e.data) {
       writeExpectationData(e.data);
     }
@@ -224,7 +239,7 @@ const modulesAsTestSuites = (state: testState, moduleOrList: ModuleList, skip: b
       item = modulesAsTestSuites(state, target as ModuleList, skipItem);
     }
     if (item) {
-      if (key.startsWith('f_')) {
+      if (key.startsWith(FOCUS_PREFIX)) {
         item.focused = true;
       }
       if (item.focused) {
@@ -252,14 +267,14 @@ const modulesAsTestSuites = (state: testState, moduleOrList: ModuleList, skip: b
 const moduleAsTestSuite = (state: testState, module: Module, skip: boolean): TestSuite | undefined => {
   const keys = Object.keys(module);
   const testKeys = keys.filter(key => typeof module[key] === 'function');
-  const focusedTests = testKeys.filter(key => key.startsWith("f_"));
+  const focusedTests = testKeys.filter(key => key.startsWith(FOCUS_PREFIX));
   if (focusedTests.length !== 0) state.hasFocused = true;
   if (skip || testKeys.length === 0) {
     state.skipped += testKeys.length;
     return;
   }
-  const skippedTests = testKeys.filter(key => key.startsWith("x_"));
-  const unskippedTests = testKeys.filter(key => !key.startsWith("x_"));
+  const skippedTests = testKeys.filter(key => key.startsWith(SKIP_PREFIX));
+  const unskippedTests = testKeys.filter(key => !key.startsWith(SKIP_PREFIX));
   state.skipped += skippedTests.length;
   if (unskippedTests.length === 0) return;
   if (focusedTests.length === 0) {
