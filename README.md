@@ -150,6 +150,6 @@ console.log('Date', user.date, typeof user.date);
 // Output: Date 2024-09-05T00:00:00Z object
 
 // Generic Types supported
-const user = webRequest.parseJson<User>(reviver, url);
+const user = webRequest.parseJson<User>(url);
 const user = webRequest.parseJsonWithRevivor<User>(reviver, url);
 ```
