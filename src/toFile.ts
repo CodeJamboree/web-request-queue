@@ -3,8 +3,14 @@ import { requestArgs } from "./global.js";
 import { toStream } from "./toStream.js";
 
 export const toFile = async (path: fs.PathLike, ...args: requestArgs): Promise<void> => {
-  const stream = fs.createWriteStream(path);
-  await toStream(stream, ...args).finally(() => {
-    stream.close();
+  return new Promise((resolve, reject) => {
+    const stream = fs.createWriteStream(path);
+    stream.on('close', resolve);
+    stream.on('error', reject);
+    toStream(stream, ...args)
+      .catch(reject)
+      .finally(() => {
+        stream.close();
+      });
   });
 }
