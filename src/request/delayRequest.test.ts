@@ -1,5 +1,5 @@
 import { dateMocker } from '../../scripts/utils/dateMocker.js';
-import { expect } from '../../scripts/utils/expect.js';
+import { expect } from '@codejamboree/js-test';
 import { state, recentRequest, maxPerPeriod, secondsPerPeriod } from '../state.js';
 import { delayRequest } from './delayRequest.js';
 

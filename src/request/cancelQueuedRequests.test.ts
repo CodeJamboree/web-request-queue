@@ -1,7 +1,6 @@
-import { expect } from '../../scripts/utils/expect.js';
+import { expect, mockFunction } from '@codejamboree/js-test';
 import { queueInterval, queueTimeout, state, blocked, queue } from '../state.js';
 import { cancelQueuedRequests } from './cancelQueuedRequests.js';
-import { mockFn } from '../../scripts/utils/mockFn.js';
 
 const url = new URL("https://localhost");
 
@@ -9,8 +8,8 @@ export const mainFlow = () => {
 
   const timeoutDelay = 100;
 
-  const mockCancel1 = mockFn();
-  const mockCancel2 = mockFn();
+  const mockCancel1 = mockFunction();
+  const mockCancel2 = mockFunction();
 
   state.flag(blocked, false);
   state.startTimeout(queueTimeout, () => {
@@ -29,8 +28,8 @@ export const mainFlow = () => {
   expect(state.hasTimers(queueTimeout), queueTimeout).is(false);
   expect(state.hasTimers(queueInterval), queueInterval).is(false);
   expect(state.count(queue), queue).is(0);
-  expect(mockCancel1.lastCall(), 'cancel1').equals([]);
-  expect(mockCancel2.lastCall(), 'cancel2').equals([]);
+  expect(mockCancel1.callAt(-1), 'cancel1').equals([]);
+  expect(mockCancel2.callAt(-1), 'cancel2').equals([]);
 }
 
 export const withoutQueue = () => {
@@ -44,9 +43,9 @@ export const withoutQueue = () => {
 }
 
 export const customReason = () => {
-  const mockCancel1 = mockFn();
+  const mockCancel1 = mockFunction();
   state.append(queue, { args: [url], onCancel: mockCancel1 });
   const reason = 'My custom reason';
   cancelQueuedRequests(reason);
-  expect(mockCancel1.lastCallArg()).is(reason);
+  expect(mockCancel1.callArg(-1, 0)).is(reason);
 }

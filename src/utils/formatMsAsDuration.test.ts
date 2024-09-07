@@ -1,5 +1,5 @@
 import { formatMsAsDuration } from "./formatMsAsDuration.js";
-import { expect } from '../../scripts/utils/expect.js';
+import { expect } from '@codejamboree/js-test';
 
 export const microsecond = () => {
   expect(formatMsAsDuration(0.001)).is('1\u00B5s');

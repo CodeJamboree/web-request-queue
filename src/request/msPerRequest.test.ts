@@ -1,4 +1,4 @@
-import { expect } from '../../scripts/utils/expect.js';
+import { expect } from '@codejamboree/js-test';
 import { maxPerPeriod, secondsPerPeriod, state } from '../state.js';
 import { msPerRequest } from './msPerRequest.js';
 

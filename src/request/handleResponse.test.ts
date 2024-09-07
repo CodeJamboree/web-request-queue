@@ -1,6 +1,5 @@
 import { handleResponse } from "./handleResponse.js";
-import { mockFn } from '../../scripts/utils/mockFn.js';
-import { expect } from '../../scripts/utils/expect.js';
+import { expect, mockFunction } from '@codejamboree/js-test';
 import { responseStatus } from "../locale.js";
 import * as http from 'http';
 
@@ -11,95 +10,95 @@ export const barbones = () => {
   handleResponse(callback, onCancel)(response);
 }
 export const listenForError = () => {
-  const mockOn = mockFn();
+  const mockOn = mockFunction();
 
   const callback = undefined;
   const onCancel = undefined;
   const response = mockResponse(mockOn);
   handleResponse(callback, onCancel)(response);
-  expect(mockOn.callAt(0)[0]).equals('error');
+  expect(mockOn.callArg(0, 0)).equals('error');
 }
 export const listenForEnd = () => {
-  const mockOn = mockFn();
+  const mockOn = mockFunction();
 
   const callback = undefined;
   const onCancel = undefined;
   const response = mockResponse(mockOn);
   handleResponse(callback, onCancel)(response);
-  expect(mockOn.callAt(1)[0]).equals('end');
+  expect(mockOn.callArg(1, 0)).equals('end');
 }
 export const passesResponseToCallback = () => {
-  const mockCallback = mockFn();
+  const mockCallback = mockFunction();
   const onCancel = undefined;
   const response = mockResponse();
   handleResponse(mockCallback, onCancel)(response);
-  expect(mockCallback.lastCall()?.[0]).is(response);
+  expect(mockCallback.callArg(-1, 0)).is(response);
 }
 export const invokesCancelOnError = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseError('the reason', mockCancel);
-  expect(mockCancel.lastCallArg()).is('the reason');
+  expect(mockCancel.callArg(-1, 0)).is('the reason');
 }
 export const fourOhFoured = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(404, 'Four Oh Foured!', mockCancel);
-  expect(mockCancel.lastCallArg()).is(responseStatus(404, 'Four Oh Foured!'));
+  expect(mockCancel.callArg(-1, 0)).is(responseStatus(404, 'Four Oh Foured!'));
 }
 
 export const zero = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(0, 'Zero Intolerance Policy', mockCancel);
-  expect(mockCancel.wasCalled()).is(false);
+  expect(mockCancel.called()).is(false);
 }
 export const one = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(1, 'One-Hit Wonder', mockCancel);
-  expect(mockCancel.wasCalled()).is(false);
+  expect(mockCancel.called()).is(false);
 }
 export const informational = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(100, 'Continue', mockCancel);
-  expect(mockCancel.wasCalled()).is(false);
+  expect(mockCancel.called()).is(false);
 }
 export const successCreated = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(201, 'Created', mockCancel);
-  expect(mockCancel.wasCalled()).is(false);
+  expect(mockCancel.called()).is(false);
 }
 export const success = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(200, 'OK', mockCancel);
-  expect(mockCancel.wasCalled()).is(false);
+  expect(mockCancel.called()).is(false);
 }
 export const redirection = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(300, 'Multiple Choices', mockCancel);
-  expect(mockCancel.lastCallArg()).is(responseStatus(300, 'Multiple Choices'));
+  expect(mockCancel.callArg(-1, 0)).is(responseStatus(300, 'Multiple Choices'));
 }
 export const clientError = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(418, "I'm a teapot", mockCancel);
-  expect(mockCancel.lastCallArg()).is(responseStatus(418, "I'm a teapot"));
+  expect(mockCancel.callArg(-1, 0)).is(responseStatus(418, "I'm a teapot"));
 }
 export const serverError = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(500, 'Internal Server Error', mockCancel);
-  expect(mockCancel.lastCallArg()).is(responseStatus(500, 'Internal Server Error'));
+  expect(mockCancel.callArg(-1, 0)).is(responseStatus(500, 'Internal Server Error'));
 }
 export const unrecognized = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(1003, "Please hold, we're taking a commercial break.", mockCancel);
-  expect(mockCancel.lastCallArg()).is(responseStatus(1003, "Please hold, we're taking a commercial break."));
+  expect(mockCancel.callArg(-1, 0)).is(responseStatus(1003, "Please hold, we're taking a commercial break."));
 }
 export const noStatusCode = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(undefined, 'Bad Status Message', mockCancel);
-  expect(mockCancel.wasCalled()).is(false);
+  expect(mockCancel.called()).is(false);
 }
 export const badCodeDefaultMessage = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
   setupResponseEnd(500, undefined, mockCancel);
-  expect(mockCancel.lastCallArg()).is(responseStatus(500, undefined));
+  expect(mockCancel.callArg(-1, 0)).is(responseStatus(500, undefined));
 }
 const setupResponseEnd = (code: number | undefined, message: string | undefined, onCancel: Function) => {
   const callback = undefined;
@@ -127,7 +126,7 @@ const setupResponseError = (error: any, onCancel: Function) => {
   });
 }
 export const goodStatusDoesNotInvokeCancel = () => {
-  const mockCancel = mockFn();
+  const mockCancel = mockFunction();
 
   const callback = undefined;
   const handlers: [string, Function][] = [];

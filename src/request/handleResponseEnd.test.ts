@@ -1,6 +1,5 @@
 import { handleResponseEnd } from "./handleResponseEnd.js";
-import { mockFn } from '../../scripts/utils/mockFn.js';
-import { expect } from '../../scripts/utils/expect.js';
+import { expect, mockFunction } from '@codejamboree/js-test';
 import { queue, state } from '../state.js';
 import { cascadingCancelation, responseStatus } from "../locale.js";
 import * as http from 'http';
@@ -24,14 +23,14 @@ export const notFound = () => {
 }
 export const badResponseInvokesCancel = () => {
   const response = mockResponse(429, 'Too Many Requests');
-  const onCancel = mockFn();
+  const onCancel = mockFunction();
   handleResponseEnd(response, onCancel)();
-  expect(onCancel.lastCall()).equals([responseStatus(429, 'Too Many Requests')])
+  expect(onCancel.callAt(-1)).equals([responseStatus(429, 'Too Many Requests')])
 }
 
 export const badResponseCancelsQueue = () => {
-  const onCancel = mockFn();
-  const onQueuedCancel = mockFn();
+  const onCancel = mockFunction();
+  const onQueuedCancel = mockFunction();
   state.append(queue, {
     args: [url],
     onCancel: onQueuedCancel
@@ -41,9 +40,9 @@ export const badResponseCancelsQueue = () => {
   handleResponseEnd(response, onCancel)();
 
   expect(state.empty(queue), 'queue.count').is(true);
-  expect(onCancel.lastCall(), 'onCancel.lastCall').equals([responseStatus(401, 'Unauthorized')]);
+  expect(onCancel.callAt(-1), 'onCancel.lastCall').equals([responseStatus(401, 'Unauthorized')]);
   expect(onQueuedCancel.callCount(), 'onQueuedCancel.callCount').is(1);
-  expect(onQueuedCancel.lastCall(), 'onQueuedCancel.lastCall').equals(
+  expect(onQueuedCancel.callAt(-1), 'onQueuedCancel.lastCall').equals(
     [cascadingCancelation(responseStatus(401, 'Unauthorized'))]);
 }
 

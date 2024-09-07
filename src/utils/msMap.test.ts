@@ -1,5 +1,5 @@
 import { msMap, microsecondKey } from "./msMap.js";
-import { expect } from '../../scripts/utils/expect.js';
+import { expect } from '@codejamboree/js-test';
 
 const regularYearDays = 365;
 const leapYearDays = regularYearDays + 1;
