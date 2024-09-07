@@ -1,7 +1,14 @@
+import { dateMocker } from '../../scripts/utils/dateMocker.js';
 import { expect } from '../../scripts/utils/expect.js';
 import { state, recentRequest, maxPerPeriod, secondsPerPeriod } from '../state.js';
 import { delayRequest } from './delayRequest.js';
 
+export const beforeEach = () => {
+  dateMocker.freeze();
+}
+export const afterEach = () => {
+  dateMocker.restore();
+}
 export const neverRequested = () => {
   state.removeDate(recentRequest);
   expect(delayRequest()).is(false);

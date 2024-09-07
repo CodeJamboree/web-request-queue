@@ -1,7 +1,14 @@
+import { dateMocker } from '../../scripts/utils/dateMocker.js';
 import { expect } from '../../scripts/utils/expect.js';
 import { state, recentRequest, firstRequest, requested } from '../state.js';
 import { beforeRequest } from './beforeRequest.js';
 
+export const beforeEach = () => {
+  dateMocker.freeze();
+}
+export const afterEach = () => {
+  dateMocker.restore();
+}
 export const firstRequst = () => {
   state.removeDate(recentRequest);
   state.removeDate(firstRequest);
