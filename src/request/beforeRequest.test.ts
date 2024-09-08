@@ -1,13 +1,13 @@
-import { dateMocker } from '../../scripts/utils/dateMocker.js';
+import { dateUtils } from '@codejamboree/js-test';
 import { expect } from '@codejamboree/js-test';
 import { state, recentRequest, firstRequest, requested } from '../state.js';
 import { beforeRequest } from './beforeRequest.js';
 
 export const beforeEach = () => {
-  dateMocker.freeze();
+  dateUtils.freeze();
 }
 export const afterEach = () => {
-  dateMocker.restore();
+  dateUtils.restore();
 }
 export const firstRequst = () => {
   state.removeDate(recentRequest);
