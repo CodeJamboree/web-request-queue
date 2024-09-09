@@ -21,7 +21,6 @@ export const makeRequest = ({ args, onRequested, onCancel }: queueParams) => {
   }
 
   beforeRequest();
-
   const preparedArgs = wrapRequestArgsCallback(onCancel, args);
   const [urlOrOptions, optionsOrCallback, callback] = preparedArgs;
   let clientRequest;

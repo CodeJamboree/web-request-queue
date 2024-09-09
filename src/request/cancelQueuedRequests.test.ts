@@ -28,8 +28,11 @@ export const mainFlow = () => {
   expect(state.hasTimers(queueTimeout), queueTimeout).is(false);
   expect(state.hasTimers(queueInterval), queueInterval).is(false);
   expect(state.count(queue), queue).is(0);
+  expect(mockCancel1.called(), 'cancel1').is(true);
+  expect(mockCancel2.called(), 'cancel2').is(true);
+
   expect(mockCancel1.callAt(-1), 'cancel1').equals([]);
-  expect(mockCancel2.callAt(-1), 'cancel2').equals([]);
+  expect(mockCancel1.callAt(-1), 'cancel2').equals([]);
 }
 
 export const withoutQueue = () => {
