@@ -1,15 +1,15 @@
-import { Writable } from "stream";
+import { PassThrough } from "stream";
 import { requestArgs } from "./global.js";
 import { toStream } from "./toStream.js";
 
-export const asString = async (...args: requestArgs): Promise<string> => {
-  const chunks: any[] = [];
-  const writable: Writable = new Writable({
-    write(chunk: any, encoding: BufferEncoding, callback) {
-      chunks.push(chunk);
-      callback();
-    }
+export const asString = async (...args: requestArgs): Promise<string> => new Promise<string>((resolve, reject) => {
+  const chunks: Buffer[] = [];
+  const stream = new PassThrough({ objectMode: true });
+  stream.on('data', (chunk: Buffer) => {
+    chunks.push(chunk);
   });
-  await toStream(writable, ...args);
-  return new TextDecoder().decode(Buffer.concat(chunks));
-}
+  stream.on('end', () => {
+    resolve(Buffer.concat(chunks).toString('utf8'));
+  })
+  toStream(stream, ...args);
+});
