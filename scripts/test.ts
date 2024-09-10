@@ -1,16 +1,20 @@
 import { run } from '@codejamboree/js-test';
+import { logger } from '@codejamboree/js-logger';
+
 try {
-  console.info('Test')
+  logger.attach();
+  logger.title('Test');
   run({
     folderPath: 'build/src',
     testFilePattern: /([xf]_)?(.*)\.test\.js$/,
-    testFileReplacement: '$2'
+    testFileReplacement: '$2',
+    timeoutMs: 100,
+    failFast: true,
+    randomOrder: true
   })
-    .catch(e => console.error(e))
-    .finally(() => {
-      console.info('done');
-    });
+    .catch(logger.logError)
+    .finally(logger.done);
 } catch (e) {
-  console.error(e);
-  console.info('done');
+  logger.logError(e);
+  logger.done();
 }
