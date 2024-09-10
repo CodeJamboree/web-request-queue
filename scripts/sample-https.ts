@@ -1,19 +1,56 @@
 import https from 'https';
+import { logger } from '@codejamboree/js-logger';
+import { httpUtils } from '@codejamboree/js-test';
 
-const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
-const options = {
-  hostname: url.hostname,
-  path: url.pathname,
-  headers: {
-    'user-agent': '@CodeJamboree/Web-Request-Queue'
-  }
-};
+const sample = async () => new Promise<void>((resolve, reject) => {
 
-const res = https.request(options, res => {
-  let total = 0;
-  console.log('Status', res.statusCode, res.statusMessage);
-  res.on('data', data => total += data.length);
-  res.on('end', () => console.log(total, 'bytes'));
+  const res = https.request('https://localhost', res => {
+
+    let chunks: any[] = [];
+
+    res.on('data', chunk => chunks.push(chunk));
+
+    res.on('end', () => {
+
+      let text = Buffer.concat(chunks).toString();
+
+      console.log('Received', text);
+
+      resolve();
+
+    });
+
+  });
+
+  res.on('error', reject);
+
+  res.end();
+
 });
-res.on('error', err => console.log(err));
-res.end();
+
+const setup = () => {
+  httpUtils.mock();
+  httpUtils.setResponseData(JSON.stringify({ foo: "bar" }))
+}
+
+const teardown = () => {
+  httpUtils.restore();
+}
+
+try {
+  logger.attach();
+
+  logger.title('Sample: HTTPS');
+
+  setup();
+  sample()
+    .catch(logger.logError)
+    .finally(() => {
+      teardown();
+      logger.done()
+    });
+} catch (e) {
+  teardown();
+  logger.logError(e);
+  logger.done();
+}

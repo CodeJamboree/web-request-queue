@@ -1,17 +1,46 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { logger } from '@codejamboree/js-logger';
+import { httpUtils } from '@codejamboree/js-test';
 import { webRequest } from '../src/index.js';
 
-const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
-const options = { headers: { 'user-agent': '@CodeJamboree/Web-Request-Queue' } };
+const sample = async () => {
+  const timestamp = Date.now();
+  const filePath = path.join(
+    os.tmpdir(),
+    `temp-${timestamp}.json`
+  );
+  await webRequest.toFile(filePath, 'https://localhost')
+    .then(() => {
+      console.log('Got file', filePath);
+      console.log(fs.statSync(filePath).size, 'bytes');
+    });
+}
 
-const temp = path.join(os.tmpdir(), `temp-${Date.now()}.json`);
+const setup = () => {
+  httpUtils.mock();
+  httpUtils.setResponseData(JSON.stringify({ foo: "bar" }))
+}
 
-webRequest.toFile(temp, url, options)
-  .then(() => {
-    console.log('Got file', temp);
-    console.log(fs.statSync(temp).size, 'bytes');
-  })
-  .catch(err => console.error(err))
-  .finally(() => console.log('done'));
+const teardown = () => {
+  httpUtils.restore();
+}
+
+try {
+  logger.attach();
+
+  logger.title('Sample: File');
+
+  setup();
+  sample()
+    .catch(logger.logError)
+    .finally(() => {
+      teardown();
+      logger.done()
+    });
+} catch (e) {
+  teardown();
+  logger.logError(e);
+  logger.done();
+}

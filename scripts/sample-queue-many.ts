@@ -1,44 +1,71 @@
 import { webRequest } from '../src/index.js';
+import { logger } from '@codejamboree/js-logger';
+import { httpUtils } from '@codejamboree/js-test';
 
-let interval = setInterval(() => {
-  const { requested, queued } = webRequest.info();
-  console.log('Requested', requested, 'of', requested + queued);
-}, 1000);
+const sample = async () => new Promise<void>((resolve, reject) => {
 
-webRequest.configure({
-  requestsPerPeriod: 1,
-  secondsPerPeriod: 2
+  const timeLabel = 'Time...';
+
+  webRequest.configure({
+    requestsPerPeriod: 1,
+    secondsPerPeriod: 1
+  });
+  const queue: Promise<string>[] = [];
+
+  console.log('queing requests');
+  console.time(timeLabel);
+  for (let i = 0; i < 10; i++) {
+    queue.push(webRequest.queue('https://localhost')
+      .then(req => new Promise<string>((resolve, reject) => {
+        req.on('error', reject);
+        req.on('response', res => {
+
+          let chunks: any[] = [];
+
+          res.on('data', chunk => chunks.push(chunk));
+
+          res.on('error', reject);
+
+          res.on('end', () => {
+            console.timeLog(timeLabel, 'Response', i);
+            let text = Buffer.concat(chunks).toString();
+            resolve(text);
+          });
+        });
+        req.end();
+      })));
+  };
+  console.log('waiting to resolve requests');
+  return Promise.all(queue).then((responses: string[]) => {
+    console.log('Requests complete');
+    console.log(responses);
+  })
+
 });
 
-const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
-
-const options = { headers: { 'user-agent': '@CodeJamboree/Web-Request-Queue' } };
-
-const all: Promise<Buffer>[] = [];
-for (let i = 0; i < 3; i++) {
-  const queued = webRequest
-    .queue(url, options)
-    .then(req => new Promise<Buffer>((resolve, reject) => {
-      req.on('error', reject);
-      req.on('response', (res) => {
-        let buffers: Buffer[] = [];
-        res.on('error', reject);
-        res.on('end', () => resolve(Buffer.concat(buffers)));
-        res.on('data', data => buffers.push(data));
-      });
-      req.end();
-    }));
-  all.push(queued);
+const setup = () => {
+  httpUtils.mock();
+  httpUtils.setResponseData(JSON.stringify({ foo: "bar" }))
 }
 
-Promise.all(all)
-  .then(buffers => {
-    console.log(buffers.length, 'requests');
-    const bytes = buffers.reduce((sum, buffer) => sum + buffer.length, 0);
-    console.log(bytes, 'bytes total');
-  })
-  .catch(err => console.error(err))
-  .finally(() => {
-    clearInterval(interval);
-    console.log('done');
-  });
+const teardown = () => {
+  httpUtils.restore();
+}
+
+try {
+  logger.attach();
+
+  logger.title('Sample: Queue with multiple promises');
+
+  setup();
+  sample()
+    .catch(logger.logError)
+    .finally(() => {
+      teardown();
+      logger.done()
+    });
+} catch (e) {
+  teardown();
+  logger.logError(e);
+  logger.done();
+}

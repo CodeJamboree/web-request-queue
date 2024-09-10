@@ -1,9 +1,49 @@
+
+import { PassThrough } from 'stream';
+import { logger } from '@codejamboree/js-logger';
+import { httpUtils } from '@codejamboree/js-test';
 import { webRequest } from '../src/index.js';
 
-const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
-const options = { headers: { 'user-agent': '@CodeJamboree/Web-Request-Queue' } };
+const sample = () => new Promise<void>((resolve) => {
+  const chunks: any[] = [];
+  const stream = new PassThrough();
+  stream.on('data', chunk => chunks.push(chunk));
+  webRequest.toStream(stream, 'https://localhost')
+    .then(stream => {
+      let text = Buffer.concat(chunks).toString();
+      console.log('Received', text);
+      resolve();
+    });
+})
 
-webRequest.toStream(process.stdout, url, options)
-  .then(stream => stream.end())
-  .catch(err => console.error(err))
-  .finally(() => console.log('done'));
+const setup = () => {
+  httpUtils.mock();
+  httpUtils.setResponseData(JSON.stringify({ foo: "bar" }))
+}
+
+const teardown = () => {
+  httpUtils.restore();
+}
+
+try {
+  logger.attach();
+
+  logger.title('Sample: Stream');
+
+  setup();
+  sample()
+    .catch(e => {
+      console.error(e);
+      logger.logError(e);
+    })
+    .finally(() => {
+      console.log('finally');
+      teardown();
+      logger.done()
+    });
+} catch (e) {
+  console.log('catch', e);
+  teardown();
+  logger.logError(e);
+  logger.done();
+}

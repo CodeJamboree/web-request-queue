@@ -1,25 +1,55 @@
 import { webRequest } from '../src/index.js';
+import { logger } from '@codejamboree/js-logger';
+import { httpUtils } from '@codejamboree/js-test';
 
-const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
+const sample = async () => new Promise<void>((resolve, reject) => {
 
-const options = {
-  hostname: url.hostname,
-  path: url.pathname,
-  headers: {
-    'user-agent': '@CodeJamboree/Web-Request-Queue'
-  }
+  webRequest.queue('https://localhost', res => {
+
+    let chunks: any[] = [];
+
+    res.on('data', chunk => chunks.push(chunk));
+
+    res.on('error', reject);
+
+    res.on('end', () => {
+
+      let text = Buffer.concat(chunks).toString();
+
+      console.log('Received', text);
+
+      resolve();
+
+    });
+  }).then(req => {
+    req.on('error', reject);
+    req.end();
+  });
+});
+
+const setup = () => {
+  httpUtils.mock();
+  httpUtils.setResponseData(JSON.stringify({ foo: "bar" }))
 }
 
-webRequest.queue(options, res => {
-  let total = 0;
-  console.log('Status', res.statusCode, res.statusMessage);
-  res.on('data', data => total += data.length);
-  res.on('end', () => console.log(total, 'bytes'));
-  res.on('error', err => console.error(err));
-})
-  .then(req => {
-    req.on('error', err => console.error(err));
-    req.end();
-  })
-  .catch(err => console.error(err))
-  .finally(() => console.log('done'));
+const teardown = () => {
+  httpUtils.restore();
+}
+
+try {
+  logger.attach();
+
+  logger.title('Sample: Queue with promise');
+
+  setup();
+  sample()
+    .catch(logger.logError)
+    .finally(() => {
+      teardown();
+      logger.done()
+    });
+} catch (e) {
+  teardown();
+  logger.logError(e);
+  logger.done();
+}

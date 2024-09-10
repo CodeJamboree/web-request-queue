@@ -1,13 +1,26 @@
+import { logger } from '@codejamboree/js-logger';
 import { webRequest } from '../src/index.js';
+import { httpUtils } from '@codejamboree/js-test';
 
-const url = new URL('https://api.github.com/repos/CodeJamboree/web-request-queue');
-const options = { headers: { 'user-agent': '@CodeJamboree/Web-Request-Queue' } };
-
-interface GitRepo {
+interface Account {
   name: string,
-  private: boolean,
-  html_url: string,
-  created_at: string
+  created_at: string | Date
+}
+
+const sample = async () => {
+
+  const url = 'https://localhost';
+
+  await Promise.all([
+    webRequest.parseJson<Account>(url),
+    webRequest.parseJsonWithReviver<Account>(revivor, url)
+  ]).then(users => {
+    users.forEach(user => {
+      console.group(user.name);
+      console.log('Created', user.created_at, typeof user.created_at);
+      console.groupEnd();
+    });
+  })
 }
 
 const revivor = (key: string, value: any) => {
@@ -15,18 +28,33 @@ const revivor = (key: string, value: any) => {
   return value;
 }
 
-Promise.all([
-  webRequest.parseJson<GitRepo>(url, options),
-  webRequest.parseJsonWithReviver<GitRepo>(revivor, url, options)
-])
-  .then(repos => {
-    repos.forEach(repo => {
-      console.group(repo.name);
-      console.log('URL', repo.html_url);
-      console.log('Private', repo.private);
-      console.log('Created', repo.created_at, typeof repo.created_at);
-      console.groupEnd();
+const setup = () => {
+  httpUtils.mock();
+  const account: Account = {
+    name: 'Lewis Moten',
+    created_at: "2024-09-09T17:24:06.311Z"
+  };
+  httpUtils.setResponseData(JSON.stringify(account));
+}
+
+const teardown = () => {
+  httpUtils.restore();
+}
+
+try {
+  logger.attach();
+
+  logger.title('Sample: JSON');
+
+  setup();
+  sample()
+    .catch(logger.logError)
+    .finally(() => {
+      teardown();
+      logger.done()
     });
-  })
-  .catch(err => console.error(err))
-  .finally(() => console.log('done'));
+} catch (e) {
+  teardown();
+  logger.logError(e);
+  logger.done();
+}
